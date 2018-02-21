@@ -1,0 +1,68 @@
+<launch>
+  <arg name="serial_no_camera1"    default="752112070754"/> <!-- Note: Replace with actual serial number -->
+  <arg name="serial_no_camera2"    default="739112060392"/> <!-- Note: Replace with actual serial number -->
+  <arg name="json_file_path" default="$(find realsense_ros_camera)/launch/includes/high_res_high_accuracy.json"/>
+  <group ns="camera1">
+    <include file="$(find realsense_ros_camera)/launch/includes/nodelet.launch.xml">
+     <arg name="fisheye_width"       default="1280"/>
+     <arg name="fisheye_height"      default="720"/>
+     <arg name="enable_fisheye"      default="true"/>
+
+     <arg name="depth_width"         default="1280"/>
+     <arg name="depth_height"        default="720"/>
+     <arg name="enable_depth"        default="true"/>
+
+     <arg name="infra1_width"        default="1280"/>
+     <arg name="infra1_height"       default="720"/>
+     <arg name="enable_infra1"       default="false"/>
+
+     <arg name="infra2_width"        default="1280"/>
+     <arg name="infra2_height"       default="720"/>
+     <arg name="enable_infra2"       default="false"/>
+
+     <arg name="color_width"         default="1280"/>
+     <arg name="color_height"        default="720"/>
+     <arg name="enable_color"        default="true"/>
+
+     <arg name="fisheye_fps"         default="15"/>
+     <arg name="depth_fps"           default="15"/>
+     <arg name="infra1_fps"          default="15"/>
+     <arg name="infra2_fps"          default="15"/>
+     <arg name="color_fps"           default="15"/>
+     <arg name="serial_no"    value="$(arg serial_no_camera1)"/>
+     <arg name="json_file_path"           value="$(arg json_file_path)"/>
+    </include>
+  </group>
+
+  <group ns="camera2">
+    <include file="$(find realsense_ros_camera)/launch/includes/nodelet.launch.xml">
+     <arg name="fisheye_width"       default="1280"/>
+     <arg name="fisheye_height"      default="720"/>
+     <arg name="enable_fisheye"      default="true"/>
+
+     <arg name="depth_width"         default="1280"/>
+     <arg name="depth_height"        default="720"/>
+     <arg name="enable_depth"        default="true"/>
+
+     <arg name="infra1_width"        default="1280"/>
+     <arg name="infra1_height"       default="720"/>
+     <arg name="enable_infra1"       default="false"/>
+
+     <arg name="infra2_width"        default="1280"/>
+     <arg name="infra2_height"       default="720"/>
+     <arg name="enable_infra2"       default="false"/>
+
+     <arg name="color_width"         default="1280"/>
+     <arg name="color_height"        default="720"/>
+     <arg name="enable_color"        default="true"/>
+
+     <arg name="fisheye_fps"         default="15"/>
+     <arg name="depth_fps"           default="15"/>
+     <arg name="infra1_fps"          default="15"/>
+     <arg name="infra2_fps"          default="15"/>
+     <arg name="color_fps"           default="15"/>
+     <arg name="serial_no"    value="$(arg serial_no_camera2)"/>
+     <arg name="json_file_path"           value="$(arg json_file_path)"/>
+    </include>
+  </group>
+</launch>
