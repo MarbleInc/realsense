@@ -1,25 +1,36 @@
 <launch>
-  <arg name="serial_no" default=""/>
-  <arg name="json_file_path" default="$(find realsense_ros_camera)/launch/includes/low_res_high_accuracy.json"/>
+  <arg name="is_435" default="false"/>
+  <arg name="high_density" default="false"/>
+  <arg name="mid_density" default="false"/>
+  <arg name="high_accuracy" default="false"/>
 
-  <arg name="fisheye_width"       default="480"/>
-  <arg name="fisheye_height"      default="270"/>
+  <arg name="serial_no" value="752112070754" if="$(arg is_435)"/>
+  <arg name="namespace" value="camera1" if="$(arg is_435)"/>
+  <arg name="serial_no" value="739112060392" unless="$(arg is_435)"/>
+  <arg name="namespace" value="camera2" unless="$(arg is_435)"/>
+
+  <arg name="operation_mode" value="$(find realsense_ros_camera)/launch/includes/high_res_high_density.json" if="$(arg high_density)"/>
+  <arg name="operation_mode" value="$(find realsense_ros_camera)/launch/includes/high_res_mid_density.json" if="$(arg mid_density)"/>
+  <arg name="operation_mode" value="$(find realsense_ros_camera)/launch/includes/high_res_high_accuracy.json" if="$(arg high_accuracy)"/>
+
+  <arg name="fisheye_width"       default="1280"/>
+  <arg name="fisheye_height"      default="720"/>
   <arg name="enable_fisheye"      default="true"/>
 
-  <arg name="depth_width"         default="480"/>
-  <arg name="depth_height"        default="270"/>
+  <arg name="depth_width"         default="1280"/>
+  <arg name="depth_height"        default="720"/>
   <arg name="enable_depth"        default="true"/>
 
-  <arg name="infra1_width"        default="480"/>
-  <arg name="infra1_height"       default="270"/>
+  <arg name="infra1_width"        default="1280"/>
+  <arg name="infra1_height"       default="720"/>
   <arg name="enable_infra1"       default="false"/>
 
-  <arg name="infra2_width"        default="480"/>
-  <arg name="infra2_height"       default="270"/>
+  <arg name="infra2_width"        default="1280"/>
+  <arg name="infra2_height"       default="720"/>
   <arg name="enable_infra2"       default="false"/>
 
-  <arg name="color_width"         default="480"/>
-  <arg name="color_height"        default="270"/>
+  <arg name="color_width"         default="1280"/>
+  <arg name="color_height"        default="720"/>
   <arg name="enable_color"        default="true"/>
 
   <arg name="fisheye_fps"         default="15"/>
@@ -35,10 +46,10 @@
   <arg name="enable_sync"         default="false"/>
   <arg name="align_depth"         default="false"/>
 
-  <group ns="camera">
+  <group ns="$(arg namespace)">
     <include file="$(find realsense_ros_camera)/launch/includes/nodelet.launch.xml">
       <arg name="serial_no"                value="$(arg serial_no)"/>
-      <arg name="json_file_path"           value="$(arg json_file_path)"/>
+      <arg name="json_file_path"           value="$(arg operation_mode)"/>
 
       <arg name="enable_pointcloud"        value="$(arg enable_pointcloud)"/>
       <arg name="enable_sync"              value="$(arg enable_sync)"/>
