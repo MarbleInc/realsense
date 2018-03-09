@@ -42,6 +42,7 @@
   <arg name="enable_pointcloud"   default="false"/>
   <arg name="enable_sync"         default="false"/>
   <arg name="align_depth"         default="false"/>
+  <arg name="base_frame_id"       default="camer_link"/>
 
   <node pkg="nodelet" type="nodelet" name="$(arg manager)" args="manager" output="screen"/>
   <node pkg="nodelet" type="nodelet" name="realsense_ros_camera" args="load realsense_ros_camera/RealSenseNodeFactory $(arg manager)">
@@ -81,6 +82,7 @@
     <param name="accel_fps"                type="int"  value="$(arg accel_fps)"/>
     <param name="enable_imu"               type="bool" value="$(arg enable_imu)"/>
 
+    <param name="base_frame_id"            type="str"  value="$(arg base_frame_id)"/>
     <param name="depth_optical_frame_id"   type="str"  value="camera_depth_optical_frame"/>
     <param name="infra1_optical_frame_id"  type="str"  value="camera_infra1_optical_frame"/>
     <param name="infra2_optical_frame_id"  type="str"  value="camera_infra2_optical_frame"/>
@@ -95,4 +97,3 @@
     <param name="camera_aligned_depth_to_fisheye_frame_id" type="str"  value="camera_aligned_depth_to_fisheye_frame"/>
   </node>
 </launch>
-
