@@ -1304,7 +1304,9 @@ void BaseD400Node::setParam(rs415_paramsConfig &config, base_depth_param param)
 {
     base_d400_paramsConfig base_config;
     base_config.base_depth_gain = config.rs415_depth_gain;
-    base_config.base_depth_enable_auto_exposure = config.rs415_depth_enable_auto_exposure;
+    std::cout << "Base depth auto exposure setting " << config.rs415_depth_enable_auto_exposure << std::endl;
+    base_config.base_depth_enable_auto_exposure = true;
+    // base_config.base_depth_enable_auto_exposure = config.rs415_depth_enable_auto_exposure;
     base_config.base_depth_visual_preset = config.rs415_depth_visual_preset;
     base_config.base_depth_frames_queue_size = config.rs415_depth_frames_queue_size;
     base_config.base_depth_error_polling_enabled = config.rs415_depth_error_polling_enabled;
