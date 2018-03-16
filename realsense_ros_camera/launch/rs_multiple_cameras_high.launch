@@ -15,7 +15,6 @@
   <arg name="operation_mode" value="$(find realsense_ros_camera)/launch/includes/low_res_mid_density.json" if="$(arg mid_density)"/>
   <arg name="operation_mode" value="$(find realsense_ros_camera)/launch/includes/low_res_high_accuracy.json" if="$(arg high_accuracy)"/>
 
-  <arg name="json_file_path" default="$(find realsense_ros_camera)/launch/includes/high_res_high_accuracy.json"/>
   <group ns="$(arg namespace_435)">
     <include file="$(find realsense_ros_camera)/launch/includes/nodelet.launch.xml">
      <arg name="fisheye_width"       default="1280"/>
@@ -44,8 +43,8 @@
      <arg name="infra2_fps"          default="15"/>
      <arg name="color_fps"           default="15"/>
      <arg name="serial_no"           value="$(arg serial_no_435)"/>
-     <arg name="json_file_path"           value="$(arg operation_mode)"/>
-     <arg name="base_frame_id"            value="$(arg base_frame_id_435)"/>
+     <arg name="json_file_path"      value="$(arg operation_mode)"/>
+     <arg name="base_frame_id"       value="$(arg base_frame_id_435)"/>
     </include>
   </group>
 
@@ -77,8 +76,8 @@
      <arg name="infra2_fps"          default="15"/>
      <arg name="color_fps"           default="15"/>
      <arg name="serial_no"           value="$(arg serial_no_415)"/>
-     <arg name="json_file_path"           value="$(arg operation_mode)"/>
-     <arg name="base_frame_id"            value="$(arg base_frame_id_415)"/>
+     <arg name="json_file_path"      value="$(arg operation_mode)"/>
+     <arg name="base_frame_id"       value="$(arg base_frame_id_415)"/>
     </include>
   </group>
 </launch>
