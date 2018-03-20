@@ -7,9 +7,14 @@
   <arg name="serial_no" value="752112070754" if="$(arg is_435)"/>
   <arg name="namespace" value="realsense435" if="$(arg is_435)"/>
   <arg name="base_frame_id" value="realsense_435_link" if="$(arg is_435)"/>
+  <arg name="depth_optical_frame_id" default="realsense_435_depth_optical_frame"  if="$(arg is_435)"/>
+  <arg name="color_optical_frame_id" default="realsense_435_color_optical_frame"  if="$(arg is_435)"/>
+
   <arg name="serial_no" value="739112060392" unless="$(arg is_435)"/>
   <arg name="namespace" value="realsense415" unless="$(arg is_435)"/>
   <arg name="base_frame_id" value="realsense_415_link" unless="$(arg is_435)"/>
+  <arg name="depth_optical_frame_id" default="realsense_415_depth_optical_frame"  unless="$(arg is_435)"/>
+  <arg name="color_optical_frame_id" default="realsense_415_color_optical_frame"  unless="$(arg is_435)"/>
 
   <arg name="operation_mode" value="$(find realsense_ros_camera)/launch/includes/high_res_high_density.json" if="$(arg high_density)"/>
   <arg name="operation_mode" value="$(find realsense_ros_camera)/launch/includes/high_res_mid_density.json" if="$(arg mid_density)"/>
