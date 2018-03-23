@@ -15,68 +15,18 @@
   <arg name="operation_mode" value="$(find realsense_ros_camera)/launch/includes/low_res_mid_density.json" if="$(arg mid_density)"/>
   <arg name="operation_mode" value="$(find realsense_ros_camera)/launch/includes/low_res_high_accuracy.json" if="$(arg high_accuracy)"/>
 
+  <arg name="json_file_path"      value="$(arg operation_mode)"/>
+
   <group ns="$(arg namespace_435)">
-    <include file="$(find realsense_ros_camera)/launch/includes/nodelet.launch.xml">
-     <arg name="fisheye_width"       default="1280"/>
-     <arg name="fisheye_height"      default="720"/>
-     <arg name="enable_fisheye"      default="true"/>
-
-     <arg name="depth_width"         default="1280"/>
-     <arg name="depth_height"        default="720"/>
-     <arg name="enable_depth"        default="true"/>
-
-     <arg name="infra1_width"        default="1280"/>
-     <arg name="infra1_height"       default="720"/>
-     <arg name="enable_infra1"       default="false"/>
-
-     <arg name="infra2_width"        default="1280"/>
-     <arg name="infra2_height"       default="720"/>
-     <arg name="enable_infra2"       default="false"/>
-
-     <arg name="color_width"         default="1280"/>
-     <arg name="color_height"        default="720"/>
-     <arg name="enable_color"        default="true"/>
-
-     <arg name="fisheye_fps"         default="15"/>
-     <arg name="depth_fps"           default="15"/>
-     <arg name="infra1_fps"          default="15"/>
-     <arg name="infra2_fps"          default="15"/>
-     <arg name="color_fps"           default="15"/>
+    <include file="$(find realsense_ros_camera)/launch/includes/marble_config.launch.xml">
      <arg name="serial_no"           value="$(arg serial_no_435)"/>
-     <arg name="json_file_path"      value="$(arg operation_mode)"/>
      <arg name="base_frame_id"       value="$(arg base_frame_id_435)"/>
     </include>
   </group>
 
   <group ns="$(arg namespace_415)">
-    <include file="$(find realsense_ros_camera)/launch/includes/nodelet.launch.xml">
-     <arg name="fisheye_width"       default="1280"/>
-     <arg name="fisheye_height"      default="720"/>
-     <arg name="enable_fisheye"      default="true"/>
-
-     <arg name="depth_width"         default="1280"/>
-     <arg name="depth_height"        default="720"/>
-     <arg name="enable_depth"        default="true"/>
-
-     <arg name="infra1_width"        default="1280"/>
-     <arg name="infra1_height"       default="720"/>
-     <arg name="enable_infra1"       default="false"/>
-
-     <arg name="infra2_width"        default="1280"/>
-     <arg name="infra2_height"       default="720"/>
-     <arg name="enable_infra2"       default="false"/>
-
-     <arg name="color_width"         default="1280"/>
-     <arg name="color_height"        default="720"/>
-     <arg name="enable_color"        default="true"/>
-
-     <arg name="fisheye_fps"         default="15"/>
-     <arg name="depth_fps"           default="15"/>
-     <arg name="infra1_fps"          default="15"/>
-     <arg name="infra2_fps"          default="15"/>
-     <arg name="color_fps"           default="15"/>
+    <include file="$(find realsense_ros_camera)/launch/includes/marble_config.launch.xml">
      <arg name="serial_no"           value="$(arg serial_no_415)"/>
-     <arg name="json_file_path"      value="$(arg operation_mode)"/>
      <arg name="base_frame_id"       value="$(arg base_frame_id_415)"/>
     </include>
   </group>
