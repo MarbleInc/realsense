@@ -17,32 +17,32 @@
 
 
   <group ns="$(arg namespace_1)">
-    <include file="$(find realsense_ros_camera)/launch/includes/nodelet.launch.xml">
+    <include file="$(find realsense_ros_camera)/launch/includes/marble_config.launch.xml">
       <arg name="serial_no"                value="$(arg serial_no_rs_1)"/>
       <arg name="json_file_path"           value="$(arg operation_mode)"/>
       <arg name="base_frame_id"            value="$(arg namespace_1)_link"/>
     </include>
   </group>
 
-  <group ns="$(arg namespace_2)">
-    <include file="$(find realsense_ros_camera)/launch/includes/nodelet.launch.xml">
-      <arg name="serial_no"                value="$(arg serial_no_rs_1)"/>
+ <group ns="$(arg namespace_2)">
+    <include file="$(find realsense_ros_camera)/launch/includes/marble_config.launch.xml">
+      <arg name="serial_no"                value="$(arg serial_no_rs_2)"/>
       <arg name="json_file_path"           value="$(arg operation_mode)"/>
       <arg name="base_frame_id"            value="$(arg namespace_2)_link"/>
     </include>
   </group>
 
   <group ns="$(arg namespace_3)">
-    <include file="$(find realsense_ros_camera)/launch/includes/nodelet.launch.xml">
-      <arg name="serial_no"                value="$(arg serial_no_rs_1)"/>
+    <include file="$(find realsense_ros_camera)/launch/includes/marble_config.launch.xml">
+      <arg name="serial_no"                value="$(arg serial_no_rs_3)"/>
       <arg name="json_file_path"           value="$(arg operation_mode)"/>
       <arg name="base_frame_id"            value="$(arg namespace_3)_link"/>
     </include>
-  </group>
+</group>
 
   <group ns="$(arg namespace_4)">
-    <include file="$(find realsense_ros_camera)/launch/includes/nodelet.launch.xml">
-      <arg name="serial_no"                value="$(arg serial_no_rs_1)"/>
+    <include file="$(find realsense_ros_camera)/launch/includes/marble_config.launch.xml">
+      <arg name="serial_no"                value="$(arg serial_no_rs_4)"/>
       <arg name="json_file_path"           value="$(arg operation_mode)"/>
       <arg name="base_frame_id"            value="$(arg namespace_4)_link"/>
     </include>
