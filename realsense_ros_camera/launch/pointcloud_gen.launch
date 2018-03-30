@@ -1,0 +1,15 @@
+<launch>
+  <!-- Nodelet manager for this pipeline -->
+  <node pkg="nodelet" type="nodelet" args="manager"
+        name="pointcloud_gen_manager" output="screen"/>
+
+
+  <node pkg="nodelet" type="nodelet" name="pc_xyz"
+        args="load depth_image_proc/point_cloud_xyz pointcloud_gen_manager --no-bond">
+    <remap from="image_rect" to="realsense415/depth/image_rect_raw"/>
+    <remap from="camera_info" to="realsense415/depth/camera_info"/>
+    <remap from="points" to="realsense415/depth/points"/>
+  </node>
+
+
+</launch>
