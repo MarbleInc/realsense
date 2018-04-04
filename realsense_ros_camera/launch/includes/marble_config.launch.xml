@@ -1,4 +1,5 @@
 <launch>
+  <arg name="node_namespace"      default="rs_X"/>
   <arg name="manager"             default="realsense_ros_camera_manager"/>
   <arg name="serial_no"           default=""/>
   <arg name="json_file_path"      default=""/>
@@ -39,9 +40,9 @@
   <arg name="accel_fps"           default="1000"/>
   <arg name="enable_imu"          default="true"/>
 
-  <arg name="enable_pointcloud"   default="true"/>
+  <arg name="enable_pointcloud"   default="false"/>
   <arg name="enable_sync"         default="true"/>
-  <arg name="align_depth"         default="false"/>
+  <arg name="align_depth"         default="true"/>
 
   <arg name="base_frame_id"       default="camera_link"/>
   <arg name="depth_frame_id"   default="$(arg base_frame_id)_depth_frame"/>
@@ -118,4 +119,22 @@
     <param name="camera_aligned_depth_to_infra2_frame_id"  type="str"  value="camera_aligned_depth_to_infra2_frame"/>
     <param name="camera_aligned_depth_to_fisheye_frame_id" type="str"  value="camera_aligned_depth_to_fisheye_frame"/>
   </node>
+
+  <node pkg="nodelet" type="nodelet" name="rs_decimation"
+        args="load image_proc/crop_decimate $(arg manager) --no-bond">
+    <remap from="camera/image_raw"       to="/$(arg node_namespace)/depth/image_rect_raw"/>
+    <remap from="camera/camera_info"     to="/$(arg node_namespace)/depth/camera_info"/>
+    <remap from="camera_out/image_raw"   to="/$(arg node_namespace)/depth/dec/image_rect_raw"/>
+    <remap from="camera_out/camera_info" to="/$(arg node_namespace)/depth/dec/camera_info"/>
+    <param name="decimation_x"           type="int"  value="2"/>
+    <param name="decimation_y"           type="int"  value="2"/>
+  </node>
+
+  <node pkg="nodelet" type="nodelet" name="rs_pointcloud"
+        args="load depth_image_proc/point_cloud_xyz $(arg manager)">
+    <remap from="image_rect"    to="/$(arg node_namespace)/depth/dec/image_rect_raw"/>
+    <remap from="camera_info"   to="/$(arg node_namespace)/depth/dec/camera_info"/>
+    <remap from="points"        to="/$(arg node_namespace)/depth/dec/point_cloud"/>
+  </node>
+
 </launch>
