@@ -1,5 +1,7 @@
 <launch>
+  <arg name="node_namespace"      default="rs_X"/>
   <rosparam param="/$(arg node_namespace)/depth_dec/image_rect_raw/disable_pub_plugins">
+    - 'image_transport/compressedDepth'
     - 'image_transport/compressed'
     - 'image_transport/theora'
   </rosparam>
@@ -15,10 +17,6 @@
     - 'image_transport/theora'
   </rosparam>
 
-
-  <!-- <param name="/$(arg node_namespace)/color/image_raw/compressed/format" type="str" value="png"/> -->
-
-  <arg name="node_namespace"      default="rs_X"/>
   <arg name="manager"             default="realsense_ros_camera_manager"/>
   <arg name="serial_no"           default=""/>
   <arg name="json_file_path"      default=""/>
