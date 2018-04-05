@@ -16,6 +16,8 @@
   </rosparam>
 
 
+  <!-- <param name="/$(arg node_namespace)/color/image_raw/compressed/format" type="str" value="png"/> -->
+
   <arg name="node_namespace"      default="rs_X"/>
   <arg name="manager"             default="realsense_ros_camera_manager"/>
   <arg name="serial_no"           default=""/>
@@ -137,6 +139,7 @@
     <param name="camera_aligned_depth_to_fisheye_frame_id" type="str"  value="camera_aligned_depth_to_fisheye_frame"/>
   </node>
 
+
   <node pkg="nodelet" type="nodelet" name="rs_decimation"
         args="load image_proc/crop_decimate $(arg manager) --no-bond">
     <remap from="camera/image_raw"       to="/$(arg node_namespace)/depth/image_rect_raw"/>
@@ -148,7 +151,7 @@
   </node>
 
   <node pkg="nodelet" type="nodelet" name="rs_pointcloud"
-        args="load depth_image_proc/point_cloud_xyz $(arg manager)">
+        args="load depth_image_proc/point_cloud_xyz $(arg manager) --no-bond">
     <remap from="image_rect"    to="/$(arg node_namespace)/depth_dec/image_rect_raw"/>
     <remap from="camera_info"   to="/$(arg node_namespace)/depth_dec/camera_info"/>
     <remap from="points"        to="/$(arg node_namespace)/depth_dec/point_cloud"/>
