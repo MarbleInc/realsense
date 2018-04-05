@@ -1,12 +1,10 @@
 <launch>
-  <!--arg name="serial_no_rs_1"    default="747512020947"/-->
   <arg name="serial_no_rs_1"    default="746112061000"/>
   <arg name="namespace_1"       value="rs_1"/>
-  <arg name="serial_no_rs_2"    default="747512020965"/>
+  <arg name="serial_no_rs_2"    default="746112060503"/>
   <arg name="namespace_2"       value="rs_2"/>
-  <arg name="serial_no_rs_3"    default="747512020054"/>
+  <arg name="serial_no_rs_3"    default="746112061019"/>
   <arg name="namespace_3"       value="rs_3"/>
-  <!--arg name="serial_no_rs_4"    default="747512020994"/-->
   <arg name="serial_no_rs_4"    default="746112061341"/>
   <arg name="namespace_4"       value="rs_4"/>
 
@@ -27,12 +25,12 @@
     </include>
   </group>
 
-<!--
  <group ns="$(arg namespace_2)">
     <include file="$(find realsense_ros_camera)/launch/includes/marble_config.launch.xml">
       <arg name="serial_no"                value="$(arg serial_no_rs_2)"/>
       <arg name="json_file_path"           value="$(arg operation_mode)"/>
       <arg name="base_frame_id"            value="$(arg namespace_2)_link"/>
+      <arg name="node_namespace"           value="$(arg namespace_2)"/>
     </include>
   </group>
 
@@ -41,9 +39,9 @@
       <arg name="serial_no"                value="$(arg serial_no_rs_3)"/>
       <arg name="json_file_path"           value="$(arg operation_mode)"/>
       <arg name="base_frame_id"            value="$(arg namespace_3)_link"/>
+      <arg name="node_namespace"           value="$(arg namespace_3)"/>
     </include>
   </group>
--->
 
   <group ns="$(arg namespace_4)">
     <include file="$(find realsense_ros_camera)/launch/includes/marble_config.launch.xml">
