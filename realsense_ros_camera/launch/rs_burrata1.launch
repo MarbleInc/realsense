@@ -1,0 +1,55 @@
+<launch>
+  <arg name="serial_no_rs_right_forward"    default="746112060986"/>
+  <arg name="namespace_1"       value="rs_right_forward"/>
+  <arg name="serial_no_rs_left_forward"    default="746112060547"/>
+  <arg name="namespace_2"       value="rs_left_forward"/>
+  <arg name="serial_no_rs_front_forward"    default="746112060559"/>
+  <arg name="namespace_3"       value="rs_front_forward"/>
+  <arg name="serial_no_rs_front_down"    default="746112060693"/>
+  <arg name="namespace_4"       value="rs_front_down"/>
+
+  <arg name="high_density" default="false"/>
+  <arg name="mid_density" default="false"/>
+  <arg name="high_accuracy" default="false"/>
+ <arg name="operation_mode" value="$(find realsense_ros_camera)/launch/includes/high_res_high_density.json" if="$(arg high_density)"/>
+  <arg name="operation_mode" value="$(find realsense_ros_camera)/launch/includes/high_res_mid_density.json" if="$(arg mid_density)"/>
+  <arg name="operation_mode" value="$(find realsense_ros_camera)/launch/includes/high_res_high_accuracy.json" if="$(arg high_accuracy)"/>
+
+
+  <group ns="$(arg namespace_1)">
+    <include file="$(find realsense_ros_camera)/launch/includes/marble_config.launch.xml">
+      <arg name="serial_no"                value="$(arg serial_no_rs_right_forward)"/>
+      <arg name="json_file_path"           value="$(arg operation_mode)"/>
+      <arg name="base_frame_id"            value="$(arg namespace_1)_link"/>
+      <arg name="node_namespace"           value="$(arg namespace_1)"/>
+    </include>
+  </group>
+
+ <group ns="$(arg namespace_2)">
+    <include file="$(find realsense_ros_camera)/launch/includes/marble_config.launch.xml">
+      <arg name="serial_no"                value="$(arg serial_no_rs_left_forward)"/>
+      <arg name="json_file_path"           value="$(arg operation_mode)"/>
+      <arg name="base_frame_id"            value="$(arg namespace_2)_link"/>
+      <arg name="node_namespace"           value="$(arg namespace_2)"/>
+    </include>
+  </group>
+
+  <group ns="$(arg namespace_3)">
+    <include file="$(find realsense_ros_camera)/launch/includes/marble_config.launch.xml">
+      <arg name="serial_no"                value="$(arg serial_no_rs_front_forward)"/>
+      <arg name="json_file_path"           value="$(arg operation_mode)"/>
+      <arg name="base_frame_id"            value="$(arg namespace_3)_link"/>
+      <arg name="node_namespace"           value="$(arg namespace_3)"/>
+    </include>
+  </group>
+
+  <group ns="$(arg namespace_4)">
+    <include file="$(find realsense_ros_camera)/launch/includes/marble_config.launch.xml">
+      <arg name="serial_no"                value="$(arg serial_no_rs_front_down)"/>
+      <arg name="json_file_path"           value="$(arg operation_mode)"/>
+      <arg name="base_frame_id"            value="$(arg namespace_4)_link"/>
+      <arg name="node_namespace"           value="$(arg namespace_4)"/>
+    </include>
+  </group>
+
+</launch>
