@@ -79,6 +79,9 @@ BaseRealSenseNode::BaseRealSenseNode(ros::NodeHandle& nodeHandle,
     _encoding[ACCEL] = sensor_msgs::image_encodings::TYPE_8UC1; // ROS message type
     _unit_step_size[ACCEL] = sizeof(uint8_t); // sensor_msgs::ImagePtr row step size
     _stream_name[ACCEL] = "accel";
+
+    // Create a timer at 2Hz to publish all the Realsense transforms periodically.
+    _static_tf_timer = nodeHandle.createTimer(ros::Duration(0.5), &BaseRealSenseNode::timerTfCallback, this);
 }
 
 void BaseRealSenseNode::publishTopics()
@@ -926,7 +929,6 @@ void BaseRealSenseNode::publish_static_tf(const ros::Time& t,
 
 void BaseRealSenseNode::publishStaticTransforms()
 {
-    ROS_INFO("publishStaticTransforms...");
     // Publish static transforms
     tf::Quaternion quaternion_optical;
     quaternion_optical.setRPY(-M_PI / 2, 0.0, -M_PI / 2);
@@ -1254,6 +1256,10 @@ bool BaseRealSenseNode::getEnabledProfile(const stream_index_pair& stream_index,
         return true;
     }
 
+
+void BaseRealSenseNode::timerTfCallback(const ros::TimerEvent& event) {
+  publishStaticTransforms();
+}
 
 BaseD400Node::BaseD400Node(ros::NodeHandle& nodeHandle,
                            ros::NodeHandle& privateNodeHandle,

@@ -67,6 +67,7 @@ namespace realsense_ros_camera
                                const std::string& from,
                                const std::string& to);
         void publishStaticTransforms();
+        void timerTfCallback(const ros::TimerEvent& event);
         void publishRgbToDepthPCTopic(const ros::Time& t, const std::map<stream_index_pair, bool>& is_frame_arrived);
         Extrinsics rsExtrinsicsToMsg(const rs2_extrinsics& extrinsics, const std::string& frame_id) const;
         rs2_extrinsics getRsExtrinsics(const stream_index_pair& from_stream, const stream_index_pair& to_stream);
@@ -108,8 +109,10 @@ namespace realsense_ros_camera
         std::map<stream_index_pair, int> _fps;
         std::map<stream_index_pair, bool> _enable;
         std::map<stream_index_pair, std::string> _stream_name;
-        tf2_ros::StaticTransformBroadcaster _static_tf_broadcaster;
-
+        tf2_ros::TransformBroadcaster _static_tf_broadcaster;
+        // Timer object to publish static transforms every second to avoid the ROS weirdness with
+        // static transforms and topic latching in bag files!
+        ros::Timer _static_tf_timer;
         std::map<stream_index_pair, image_transport::Publisher> _image_publishers;
         std::map<stream_index_pair, ros::Publisher> _imu_publishers;
         std::map<stream_index_pair, int> _image_format;
