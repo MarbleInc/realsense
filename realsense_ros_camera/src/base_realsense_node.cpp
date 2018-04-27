@@ -80,8 +80,8 @@ BaseRealSenseNode::BaseRealSenseNode(ros::NodeHandle& nodeHandle,
     _unit_step_size[ACCEL] = sizeof(uint8_t); // sensor_msgs::ImagePtr row step size
     _stream_name[ACCEL] = "accel";
 
-    // Create a timer at 2Hz to publish all the Realsense transforms periodically.
-    _static_tf_timer = nodeHandle.createTimer(ros::Duration(0.5), &BaseRealSenseNode::timerTfCallback, this);
+    // Create a timer at 100Hz to publish all the Realsense transforms periodically.
+    _static_tf_timer = nodeHandle.createTimer(ros::Duration(0.01), &BaseRealSenseNode::timerTfCallback, this);
 }
 
 void BaseRealSenseNode::publishTopics()
