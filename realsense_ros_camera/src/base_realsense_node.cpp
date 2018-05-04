@@ -941,11 +941,16 @@ void BaseRealSenseNode::publishStaticTransforms()
     // Hence no additional transformation is done from base link to depth frame.
     // Transform base link to depth frame
     float3 zero_trans{0, 0, 0};
-    publish_static_tf(transform_ts_, zero_trans, quaternion{0, 0, 0, 1}, _base_frame_id, _frame_id[DEPTH]);
+    // The 2 transforms below are handled within the Marble static tf broadcaster, therefore
+    // disabled here!
 
-    // Transform depth frame to depth optical frame
-    quaternion q{quaternion_optical.getX(), quaternion_optical.getY(), quaternion_optical.getZ(), quaternion_optical.getW()};
-    publish_static_tf(transform_ts_, zero_trans, q, _frame_id[DEPTH], _optical_frame_id[DEPTH]);
+    // publish_static_tf(transform_ts_, zero_trans, quaternion{0, 0, 0, 1}, _base_frame_id,
+    // _frame_id[DEPTH]);
+
+    // // Transform depth frame to depth optical frame
+    // quaternion q{quaternion_optical.getX(), quaternion_optical.getY(), quaternion_optical.getZ(),
+    // quaternion_optical.getW()};
+    // publish_static_tf(transform_ts_, zero_trans, q, _frame_id[DEPTH], _optical_frame_id[DEPTH]);
 
     rs2::stream_profile depth_profile;
     if (!getEnabledProfile(DEPTH, depth_profile))
