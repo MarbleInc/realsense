@@ -27,6 +27,7 @@
   <arg name="fisheye"             default="fisheye"/>
   <arg name="accel"               default="accel"/>
   <arg name="gyro"                default="gyro"/>
+  <arg name="machine"             default="com-1"/>
 
   <arg name="fisheye_width"       default="1280"/>
   <arg name="fisheye_height"      default="720"/>
@@ -77,8 +78,8 @@
   <arg name="accel_optical_frame_id"   default="$(arg base_frame_id)_accel_optical_frame"/>
   <arg name="gyro_optical_frame_id"    default="$(arg base_frame_id)_gyro_optical_frame"/>
 
-  <node pkg="nodelet" type="nodelet" name="$(arg manager)" args="manager" output="screen"/>
-  <node pkg="nodelet" type="nodelet" name="realsense_ros_camera" args="load realsense_ros_camera/RealSenseNodeFactory $(arg manager)">
+  <node pkg="nodelet" type="nodelet" name="$(arg manager)" args="manager" output="screen" machine="$(arg machine)"/>
+  <node pkg="nodelet" type="nodelet" name="realsense_ros_camera" args="load realsense_ros_camera/RealSenseNodeFactory $(arg manager)" machine="$(arg machine)">
     <param name="serial_no"                type="str"  value="$(arg serial_no)"/>
     <param name="json_file_path"           type="str"  value="$(arg json_file_path)"/>
 
@@ -139,7 +140,7 @@
 
 
   <node pkg="nodelet" type="nodelet" name="rs_decimation"
-        args="load image_proc/crop_decimate $(arg manager) --no-bond">
+        args="load image_proc/crop_decimate $(arg manager) --no-bond" machine="$(arg machine)">
     <remap from="camera/image_raw"       to="/$(arg node_namespace)/depth/image_rect_raw"/>
     <remap from="camera/camera_info"     to="/$(arg node_namespace)/depth/camera_info"/>
     <remap from="camera_out/image_raw"   to="/$(arg node_namespace)/depth_dec/image_rect_raw"/>
@@ -149,7 +150,7 @@
   </node>
 
   <node pkg="nodelet" type="nodelet" name="rs_pointcloud"
-        args="load depth_image_proc/point_cloud_xyz $(arg manager) --no-bond">
+        args="load depth_image_proc/point_cloud_xyz $(arg manager) --no-bond" machine="$(arg machine)">
     <remap from="image_rect"    to="/$(arg node_namespace)/depth_dec/image_rect_raw"/>
     <remap from="camera_info"   to="/$(arg node_namespace)/depth_dec/camera_info"/>
     <remap from="points"        to="/$(arg node_namespace)/depth_dec/point_cloud"/>
