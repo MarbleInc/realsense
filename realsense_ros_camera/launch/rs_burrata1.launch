@@ -13,6 +13,8 @@
   <arg name="namespace_6"       value="rs_right_side"/>
   <arg name="serial_no_rs_rear"    default="751412060860"/>
   <arg name="namespace_7"       value="rs_rear"/>
+  <arg name="serial_no_rs_rear_forward"    default="746112060677"/>
+  <arg name="namespace_8"       value="rs_rear_forward"/>
 
   <arg name="high_density" default="false"/>
   <arg name="mid_density" default="false"/>
@@ -74,6 +76,15 @@
       <arg name="serial_no"                value="$(arg serial_no_rs_rear)"/>
       <arg name="base_frame_id"            value="$(arg namespace_7)_link"/>
       <arg name="node_namespace"           value="$(arg namespace_7)"/>
+      <arg name="machine"                  value="com-2"/>
+    </include>
+  </group>
+
+  <group ns="$(arg namespace_8)">
+    <include file="$(find realsense_ros_camera)/launch/includes/marble_config.launch.xml">
+      <arg name="serial_no"                value="$(arg serial_no_rs_rear_forward)"/>
+      <arg name="base_frame_id"            value="$(arg namespace_8)_link"/>
+      <arg name="node_namespace"           value="$(arg namespace_8)"/>
       <arg name="machine"                  value="com-2"/>
     </include>
   </group>
