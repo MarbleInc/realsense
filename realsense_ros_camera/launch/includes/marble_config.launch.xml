@@ -149,11 +149,4 @@
     <param name="decimation_y"           type="int"  value="4"/>
   </node>
 
-  <node pkg="nodelet" type="nodelet" name="rs_pointcloud"
-        args="load depth_image_proc/point_cloud_xyz $(arg manager) --no-bond" machine="$(arg machine)">
-    <remap from="image_rect"    to="/$(arg node_namespace)/depth_dec/image_rect_raw"/>
-    <remap from="camera_info"   to="/$(arg node_namespace)/depth_dec/camera_info"/>
-    <remap from="points"        to="/$(arg node_namespace)/depth_dec/point_cloud"/>
-  </node>
-
 </launch>
