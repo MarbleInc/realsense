@@ -33,7 +33,6 @@ namespace realsense_ros_camera
                           const std::string& serial_no);
 
         virtual void publishTopics() override;
-        virtual void registerDynamicReconfigCb() override;
         virtual ~BaseRealSenseNode() {}
 
     protected:
@@ -151,14 +150,9 @@ namespace realsense_ros_camera
 
         std::map<stream_index_pair, bool> _is_frame_arrived;
         const std::string _namespace;
-    };//end class
 
-    class BaseD400Node : public BaseRealSenseNode
-    {
+    // Functionality from BaseD400Node
     public:
-        BaseD400Node(ros::NodeHandle& nodeHandle,
-                     ros::NodeHandle& privateNodeHandle,
-                     rs2::device dev, const std::string& serial_no);
         virtual void registerDynamicReconfigCb() override;
 
     protected:
@@ -172,5 +166,8 @@ namespace realsense_ros_camera
 
         std::shared_ptr<dynamic_reconfigure::Server<base_d400_paramsConfig>> _server;
         dynamic_reconfigure::Server<base_d400_paramsConfig>::CallbackType _f;
-    };
+        int toggle_ctr_ = 0;
+
+    };//end class
+
 }

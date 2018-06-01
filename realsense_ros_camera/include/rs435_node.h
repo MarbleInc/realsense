@@ -29,7 +29,7 @@ namespace realsense_ros_camera
         rs435_param_count
     };
 
-    class RS435Node : public BaseD400Node
+    class RS435Node : public BaseRealSenseNode
     {
     public:
         RS435Node(ros::NodeHandle& nodeHandle,

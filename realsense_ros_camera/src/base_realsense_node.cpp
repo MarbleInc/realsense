@@ -95,11 +95,6 @@ void BaseRealSenseNode::publishTopics()
     &BaseRealSenseNode::timerTfCallback, this);
 }
 
-void BaseRealSenseNode::registerDynamicReconfigCb()
-{
-    ROS_INFO("Dynamic reconfig parameters is not implemented in the base node.");
-}
-
 void BaseRealSenseNode::getParameters()
 {
     ROS_INFO("getParameters...");
@@ -1245,6 +1240,19 @@ void BaseRealSenseNode::publishFrame(rs2::frame f, const ros::Time& t,
 
         image_publisher.publish(img);
         ROS_DEBUG("%s stream published", rs2_stream_to_string(f.get_profile().stream_type()));
+
+	if (toggle_ctr_ <= 20) {
+	  toggle_ctr_++;
+        }
+        // Toggle the depth auto exposure
+        if (toggle_ctr_ == 10) {
+          ROS_WARN("Toggling depth auto exposure: Off");
+          setOption(DEPTH, RS2_OPTION_VISUAL_PRESET, 0);
+        }
+        if (toggle_ctr_ == 20) {
+          ROS_WARN("Toggling depth auto exposure: On");
+          setOption(DEPTH, RS2_OPTION_VISUAL_PRESET, 1);
+        }
     }
 }
 
@@ -1267,15 +1275,7 @@ void BaseRealSenseNode::timerTfCallback(const ros::TimerEvent& event) {
   publishStaticTransforms();
 }
 
-BaseD400Node::BaseD400Node(ros::NodeHandle& nodeHandle,
-                           ros::NodeHandle& privateNodeHandle,
-                           rs2::device dev, const std::string& serial_no)
-    : BaseRealSenseNode(nodeHandle,
-                        privateNodeHandle,
-                        dev, serial_no)
-{}
-
-void BaseD400Node::callback(base_d400_paramsConfig &config, uint32_t level)
+void BaseRealSenseNode::callback(base_d400_paramsConfig &config, uint32_t level)
 {
     ROS_DEBUG_STREAM("D400 - Level: " << level);
 
@@ -1293,12 +1293,12 @@ void BaseD400Node::callback(base_d400_paramsConfig &config, uint32_t level)
     }
 }
 
-void BaseD400Node::setOption(stream_index_pair sip, rs2_option opt, float val)
+void BaseRealSenseNode::setOption(stream_index_pair sip, rs2_option opt, float val)
 {
     _sensors[sip].set_option(opt, val);
 }
 
-void BaseD400Node::setParam(rs435_paramsConfig &config, base_depth_param param)
+void BaseRealSenseNode::setParam(rs435_paramsConfig &config, base_depth_param param)
 {
     base_d400_paramsConfig base_config;
     base_config.base_depth_gain = config.rs435_depth_gain;
@@ -1312,7 +1312,7 @@ void BaseD400Node::setParam(rs435_paramsConfig &config, base_depth_param param)
     setParam(base_config, param);
 }
 
-void BaseD400Node::setParam(rs415_paramsConfig &config, base_depth_param param)
+void BaseRealSenseNode::setParam(rs415_paramsConfig &config, base_depth_param param)
 {
     base_d400_paramsConfig base_config;
     base_config.base_depth_gain = config.rs415_depth_gain;
@@ -1326,7 +1326,7 @@ void BaseD400Node::setParam(rs415_paramsConfig &config, base_depth_param param)
     setParam(base_config, param);
 }
 
-void BaseD400Node::setParam(base_d400_paramsConfig &config, base_depth_param param)
+void BaseRealSenseNode::setParam(base_d400_paramsConfig &config, base_depth_param param)
 {
     // W/O for zero param
     if (0 == param)
@@ -1387,9 +1387,9 @@ void BaseD400Node::setParam(base_d400_paramsConfig &config, base_depth_param par
     }
 }
 
-void BaseD400Node::registerDynamicReconfigCb()
+void BaseRealSenseNode::registerDynamicReconfigCb()
 {
     _server = std::make_shared<dynamic_reconfigure::Server<base_d400_paramsConfig>>();
-    _f = boost::bind(&BaseD400Node::callback, this, _1, _2);
+    _f = boost::bind(&BaseRealSenseNode::callback, this, _1, _2);
     _server->setCallback(_f);
 }

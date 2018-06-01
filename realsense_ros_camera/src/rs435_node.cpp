@@ -6,7 +6,7 @@ using namespace realsense_ros_camera;
 RS435Node::RS435Node(ros::NodeHandle& nodeHandle,
                      ros::NodeHandle& privateNodeHandle,
                      rs2::device dev, const std::string& serial_no)
-    : BaseD400Node(nodeHandle, privateNodeHandle, dev, serial_no)
+    : BaseRealSenseNode(nodeHandle, privateNodeHandle, dev, serial_no)
 {}
 
 void RS435Node::registerDynamicReconfigCb()
@@ -97,7 +97,7 @@ void RS435Node::setParam(rs435_paramsConfig &config, rs435_param param)
         _sensors[DEPTH].set_option(rs2_option::RS2_OPTION_EMITTER_ENABLED, config.rs435_depth_emitter_enabled);
         break;
     default:
-        BaseD400Node::setParam(config, (base_depth_param)param);
+        BaseRealSenseNode::setParam(config, (base_depth_param)param);
         break;
     }
 }

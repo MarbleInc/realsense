@@ -6,7 +6,7 @@ using namespace realsense_ros_camera;
 RS415Node::RS415Node(ros::NodeHandle& nodeHandle,
                      ros::NodeHandle& privateNodeHandle,
                      rs2::device dev, const std::string& serial_no)
-    : BaseD400Node(nodeHandle, privateNodeHandle, dev, serial_no)
+    : BaseRealSenseNode(nodeHandle, privateNodeHandle, dev, serial_no)
 {}
 
 void RS415Node::registerDynamicReconfigCb()
@@ -109,7 +109,7 @@ void RS415Node::setParam(rs415_paramsConfig &config, rs415_param param)
         _sensors[DEPTH].set_option(rs2_option::RS2_OPTION_ENABLE_AUTO_WHITE_BALANCE, config.rs415_depth_enable_auto_white_balance);
         break;
     default:
-        BaseD400Node::setParam(config, (base_depth_param)param);
+        BaseRealSenseNode::setParam(config, (base_depth_param)param);
         break;
     }
 }
