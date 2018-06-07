@@ -55,6 +55,7 @@
     </include>
   </group>
 
+  <!--
   <group ns="$(arg namespace_5)">
     <include file="$(find realsense_ros_camera)/launch/includes/marble_config.launch.xml">
       <arg name="serial_no"                value="$(arg serial_no_rs_left_side)"/>
@@ -88,5 +89,6 @@
       <arg name="machine"                  value="com-2"/>
     </include>
   </group>
+  -->
 
 </launch>
