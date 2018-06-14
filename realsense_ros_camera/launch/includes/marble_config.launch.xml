@@ -18,7 +18,7 @@
   </rosparam>
 
   <arg name="manager"             default="realsense_ros_camera_manager"/>
-  <arg name="serial_no"           default=""/>
+  <!-- <arg name="serial_no"           default=""/> -->
   <arg name="json_file_path"      default=""/>
   <arg name="depth"               default="depth"/>
   <arg name="infra1"              default="infra1"/>
@@ -80,7 +80,7 @@
 
   <node pkg="nodelet" type="nodelet" name="$(arg manager)" args="manager" output="screen" machine="$(arg machine)"/>
   <node pkg="nodelet" type="nodelet" name="realsense_ros_camera" args="load realsense_ros_camera/RealSenseNodeFactory $(arg manager)" machine="$(arg machine)">
-    <param name="serial_no"                type="str"  value="$(arg serial_no)"/>
+    <!-- <param name="serial_no"                type="str"  value="$(arg serial_no)"/> -->
     <param name="json_file_path"           type="str"  value="$(arg json_file_path)"/>
 
     <param name="enable_pointcloud"        type="bool" value="$(arg enable_pointcloud)"/>
