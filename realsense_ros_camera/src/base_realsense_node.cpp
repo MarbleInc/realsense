@@ -1241,17 +1241,17 @@ void BaseRealSenseNode::publishFrame(rs2::frame f, const ros::Time& t,
         image_publisher.publish(img);
         ROS_DEBUG("%s stream published", rs2_stream_to_string(f.get_profile().stream_type()));
 
-	if (toggle_ctr_ <= 20) {
-	  toggle_ctr_++;
+        // Toggle the depth auto exposure 5 times.
+        if (toggle_ctr_ <= 100) {
+          toggle_ctr_++;
         }
-        // Toggle the depth auto exposure
-        if (toggle_ctr_ == 10) {
-          ROS_WARN("Toggling depth auto exposure: Off");
-          setOption(DEPTH, RS2_OPTION_VISUAL_PRESET, 0);
-        }
-        if (toggle_ctr_ == 20) {
+        if (toggle_ctr_ % 20 == 0) {
           ROS_WARN("Toggling depth auto exposure: On");
           setOption(DEPTH, RS2_OPTION_VISUAL_PRESET, 1);
+        }
+        else if (toggle_ctr_ % 10 == 0) {
+          ROS_WARN("Toggling depth auto exposure: Off");
+          setOption(DEPTH, RS2_OPTION_VISUAL_PRESET, 0);
         }
     }
 }
