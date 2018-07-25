@@ -166,7 +166,6 @@ namespace realsense_ros_camera
 
         std::shared_ptr<dynamic_reconfigure::Server<base_d400_paramsConfig>> _server;
         dynamic_reconfigure::Server<base_d400_paramsConfig>::CallbackType _f;
-        int toggle_ctr_ = 0;
 
     };//end class
 
