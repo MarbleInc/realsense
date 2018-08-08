@@ -57,6 +57,7 @@
   <arg name="gyro_fps"            default="1000"/>
   <arg name="accel_fps"           default="1000"/>
   <arg name="enable_imu"          default="true"/>
+  <arg name="laser_power"         default="6"/>
 
   <arg name="enable_pointcloud"   default="false"/>
   <arg name="enable_sync"         default="true"/>
@@ -136,6 +137,7 @@
     <param name="camera_aligned_depth_to_infra1_frame_id"  type="str"  value="camera_aligned_depth_to_infra1_frame"/>
     <param name="camera_aligned_depth_to_infra2_frame_id"  type="str"  value="camera_aligned_depth_to_infra2_frame"/>
     <param name="camera_aligned_depth_to_fisheye_frame_id" type="str"  value="camera_aligned_depth_to_fisheye_frame"/>
+    <param name="rs415_depth_laser_power "        type="int" value="$(arg laser_power)"/>
   </node>
 
 
