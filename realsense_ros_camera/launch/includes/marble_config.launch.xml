@@ -57,7 +57,7 @@
   <arg name="gyro_fps"            default="1000"/>
   <arg name="accel_fps"           default="1000"/>
   <arg name="enable_imu"          default="true"/>
-  <arg name="laser_power"         default="6"/>
+  <arg name="laser_power"         default="12"/>
 
   <arg name="enable_pointcloud"   default="false"/>
   <arg name="enable_sync"         default="true"/>
