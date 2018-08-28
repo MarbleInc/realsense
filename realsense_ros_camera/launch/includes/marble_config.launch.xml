@@ -60,7 +60,7 @@
   <arg name="laser_power"         default="12"/>
 
   <arg name="enable_pointcloud"   default="false"/>
-  <arg name="enable_sync"         default="true"/>
+  <arg name="enable_sync"         default="false"/>
   <arg name="align_depth"         default="false"/>
 
   <arg name="base_frame_id"       default="camera_link"/>
