@@ -541,8 +541,8 @@ void BaseRealSenseNode::setupStreams()
                         ROS_WARN("Frame metadata isn't available! (frame_timestamp_domain = RS2_TIMESTAMP_DOMAIN_SYSTEM_TIME)");
 
                     _intialize_time_base = true;
-                    //_ros_time_base = ros::Time::now();
-                    //_camera_time_base = frame.get_timestamp();
+                    _ros_time_base = ros::Time::now();
+                    _camera_time_base = frame.get_timestamp();
                 }
 
                 ros::Time t;
@@ -553,10 +553,18 @@ void BaseRealSenseNode::setupStreams()
 		    // OLD:
                     // t = ros::Time(_ros_time_base.toSec()+ (/*ms*/ frame.get_timestamp() - /*ms*/ _camera_time_base) / /*ms to seconds*/ 1000);
 		    // NEW:
-		    t = ros::Time(frame.get_frame_metadata(RS2_FRAME_METADATA_BACKEND_TIMESTAMP) * 1e-3 - \
-			(frame.get_frame_metadata(RS2_FRAME_METADATA_FRAME_TIMESTAMP) - frame.get_frame_metadata(RS2_FRAME_METADATA_SENSOR_TIMESTAMP)) * 1e-6);
+		    // Time from the UVC driver (System time)
+		    rs2_metadata_type t_uvc_driver = frame.get_frame_metadata(RS2_FRAME_METADATA_BACKEND_TIMESTAMP);
+		    // Time at the middle of the sensor exposure (Device clock)
+		    rs2_metadata_type t_sensor = frame.get_frame_metadata(RS2_FRAME_METADATA_SENSOR_TIMESTAMP);
+		    // Time at the moment of transmission of data (Device clock)
+		    rs2_metadata_type t_frame = frame.get_frame_metadata(RS2_FRAME_METADATA_FRAME_TIMESTAMP);
+		    // Time at which the data is capture  = UVC_time - (Frame_time-Sensor_time)
+		    t = ros::Time( /*ms*/ t_uvc_driver * /*ms to seconds*/ 1e-3 - (/*us*/ t_frame- /*us*/ t_sensor) * /*us to seconds*/ 1e-6);
 		    // CHECK OFFSET FROM ROS TIME NOW :
+		    // Ros time now
 		    // ros::Time t2 = ros::Time::now();
+		    // Print offset from computed time of capture from ros time now
 		    // ROS_INFO_STREAM("Sensor - Now ms"<< (t.toSec() - t2.toSec())*1000.0);
 		}
 
