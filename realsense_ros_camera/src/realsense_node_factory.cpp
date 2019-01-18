@@ -7,6 +7,8 @@
 #include "../include/rs435_node.h"
 #include <iostream>
 #include <map>
+#include <thread>         // std::this_thread::sleep_for
+#include <chrono> // std::chrono::seconds
 
 using namespace realsense_ros_camera;
 
@@ -29,47 +31,69 @@ RealSenseNodeFactory::RealSenseNodeFactory()
     rs2::log_to_console(severity);
 }
 
+rs2::device RealSenseNodeFactory::getDevice(std::string& serial_no)
+{
+    auto list = _ctx.query_devices();
+    if (0 == list.size())
+    {
+        ROS_ERROR("No RealSense devices were found! Terminating RealSense Node...");
+        ros::shutdown();
+        exit(1);
+    }
+
+    bool found = false;
+    rs2::device retDev;
+
+    for (auto&& dev : list)
+    {
+        auto sn = dev.get_info(RS2_CAMERA_INFO_SERIAL_NUMBER);
+        ROS_DEBUG_STREAM("Device with serial number " << sn << " was found.");
+        if (serial_no.empty())
+        {
+            retDev = dev;
+            serial_no = sn;
+            found = true;
+            break;
+        }
+        else if (sn == serial_no)
+        {
+            retDev = dev;
+            found = true;
+            break;
+        }
+    }
+
+    if (!found)
+    {
+        ROS_FATAL_STREAM("The requested device with serial number " << serial_no << " is NOT found!");
+        ros::shutdown();
+        exit(1);
+    }
+
+    return retDev;
+}
+
 void RealSenseNodeFactory::onInit()
 {
     try{
-        auto list = _ctx.query_devices();
-        if (0 == list.size())
-        {
-            ROS_ERROR("No RealSense devices were found! Terminating RealSense Node...");
-            ros::shutdown();
-            exit(1);
-        }
-
-        auto privateNh = getPrivateNodeHandle();
         auto nh = getNodeHandle();
+        auto privateNh = getPrivateNodeHandle();
         std::string serial_no("");
         privateNh.param("serial_no", serial_no, std::string(""));
-        bool found = false;
-        for (auto&& dev : list)
-        {
-            auto sn = dev.get_info(RS2_CAMERA_INFO_SERIAL_NUMBER);
-            ROS_DEBUG_STREAM("Device with serial number " << sn << " was found.");
-            if (serial_no.empty())
-            {
-                _device = dev;
-                serial_no = sn;
-                found = true;
-                break;
-            }
-            else if (sn == serial_no)
-            {
-                _device = dev;
-                found = true;
-                break;
-            }
-        }
 
-        if (!found)
-        {
-            ROS_FATAL_STREAM("The requested device with serial number " << serial_no << " is NOT found!");
-            ros::shutdown();
-            exit(1);
-        }
+        rs2::device dev;
+        dev = getDevice(serial_no);
+
+        // Hardware reset and sleep for 10 seconds to make sure that the reset takes place successfully.
+        // Using mutex and condition variables is not currently possible because of no support of device specific callbacks.
+        // Documented in PR : https://github.com/intel-ros/realsense/pull/455
+        ROS_INFO_STREAM("Resetting device with serial no: "<<dev.get_info(RS2_CAMERA_INFO_SERIAL_NUMBER));
+        dev.hardware_reset();
+        ROS_INFO_STREAM("Sleeping camera with serial no: "<<dev.get_info(RS2_CAMERA_INFO_SERIAL_NUMBER));
+        std::this_thread::sleep_for (std::chrono::seconds(10));
+        ROS_INFO_STREAM("Woke camera with serial no: "<<dev.get_info(RS2_CAMERA_INFO_SERIAL_NUMBER));
+
+        _device = getDevice(serial_no);
 
         _ctx.set_devices_changed_callback([this](rs2::event_information& info)
         {
