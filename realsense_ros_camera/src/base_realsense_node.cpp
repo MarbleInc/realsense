@@ -110,35 +110,42 @@ void BaseRealSenseNode::getParameters()
     _pnh.param("depth_width", _width[DEPTH], DEPTH_WIDTH);
     _pnh.param("depth_height", _height[DEPTH], DEPTH_HEIGHT);
     _pnh.param("depth_fps", _fps[DEPTH], DEPTH_FPS);
+    _pnh.param("depth_fps_tolerance", _fps_tolerance[DEPTH], DEPTH_FPS_TOLERANCE);
     _pnh.param("enable_depth", _enable[DEPTH], ENABLE_DEPTH);
     _aligned_depth_images[DEPTH].resize(_width[DEPTH] * _height[DEPTH] * _unit_step_size[DEPTH]);
 
     _pnh.param("infra1_width", _width[INFRA1], INFRA1_WIDTH);
     _pnh.param("infra1_height", _height[INFRA1], INFRA1_HEIGHT);
     _pnh.param("infra1_fps", _fps[INFRA1], INFRA1_FPS);
+    _pnh.param("infra1_fps_tolerance", _fps_tolerance[INFRA1], INFRA1_FPS_TOLERANCE);
     _pnh.param("enable_infra1", _enable[INFRA1], ENABLE_INFRA1);
     _aligned_depth_images[INFRA1].resize(_width[DEPTH] * _height[DEPTH] * _unit_step_size[DEPTH]);
 
     _pnh.param("infra2_width", _width[INFRA2], INFRA2_WIDTH);
     _pnh.param("infra2_height", _height[INFRA2], INFRA2_HEIGHT);
     _pnh.param("infra2_fps", _fps[INFRA2], INFRA2_FPS);
+    _pnh.param("infra2_fps_tolerance", _fps_tolerance[INFRA2], INFRA2_FPS_TOLERANCE);
     _pnh.param("enable_infra2", _enable[INFRA2], ENABLE_INFRA2);
     _aligned_depth_images[INFRA2].resize(_width[DEPTH] * _height[DEPTH] * _unit_step_size[DEPTH]);
 
     _pnh.param("color_width", _width[COLOR], COLOR_WIDTH);
     _pnh.param("color_height", _height[COLOR], COLOR_HEIGHT);
     _pnh.param("color_fps", _fps[COLOR], COLOR_FPS);
+    _pnh.param("color_fps_tolerance", _fps_tolerance[COLOR], COLOR_FPS_TOLERANCE);
     _pnh.param("enable_color", _enable[COLOR], ENABLE_COLOR);
     _aligned_depth_images[COLOR].resize(_width[DEPTH] * _height[DEPTH] * _unit_step_size[DEPTH]);
 
     _pnh.param("fisheye_width", _width[FISHEYE], FISHEYE_WIDTH);
     _pnh.param("fisheye_height", _height[FISHEYE], FISHEYE_HEIGHT);
     _pnh.param("fisheye_fps", _fps[FISHEYE], FISHEYE_FPS);
+    _pnh.param("fisheye_fps_tolerance", _fps_tolerance[FISHEYE], FISHEYE_FPS_TOLERANCE);
     _pnh.param("enable_fisheye", _enable[FISHEYE], ENABLE_FISHEYE);
     _aligned_depth_images[FISHEYE].resize(_width[DEPTH] * _height[DEPTH] * _unit_step_size[DEPTH]);
 
     _pnh.param("gyro_fps", _fps[GYRO], GYRO_FPS);
+    _pnh.param("gyro_fps_tolerance", _fps_tolerance[GYRO], GYRO_FPS_TOLERANCE);
     _pnh.param("accel_fps", _fps[ACCEL], ACCEL_FPS);
+    _pnh.param("accel_fps_tolerance", _fps_tolerance[ACCEL], ACCEL_FPS_TOLERANCE);
     _pnh.param("enable_imu", _enable[GYRO], ENABLE_IMU);
     _pnh.param("enable_imu", _enable[ACCEL], ENABLE_IMU);
 
@@ -304,6 +311,19 @@ void BaseRealSenseNode::setupPublishers()
 
             _image_publishers[stream] = image_transport.advertise(image_raw.str(), 1);
             _info_publisher[stream] = _node_handle.advertise<sensor_msgs::CameraInfo>(camera_info.str(), 1);
+
+            _updater[stream] = new marble::DiagnosticUpdater(image_raw.str(), _node_handle);
+
+            marble::diagnostics::FrequencyParams warning_freq_params;
+            warning_freq_params.min_frequency = (double)_fps[stream] - _fps_tolerance[stream];
+            warning_freq_params.max_frequency = (double)_fps[stream] + _fps_tolerance[stream];
+
+            marble::OutputDiagnosticParams output_image_params;
+            output_image_params.freq_warning_thresholds = warning_freq_params;
+            output_image_params.time_window_sec = 10.0;
+
+            _output_sensor_diagnostic[stream] = new marble::OutputDiagnostic(image_raw.str(), _node_handle, output_image_params);
+            _output_sensor_diagnostic[stream]->addToUpdater(_updater[stream]);
 
             if (_align_depth && (stream != DEPTH))
             {
@@ -525,16 +545,16 @@ void BaseRealSenseNode::setupStreams()
         auto frame_callback = [this](rs2::frame frame)
         {
             try{
-		// OLD METHOD:
+            		// OLD METHOD:
                 // We compute a ROS timestamp which is based on an initial ROS time at point of first frame,
                 // and the incremental timestamp from the camera.
                 // In sync mode the timestamp is based on ROS time
 
-		// NEW METHOD:
-		// The ROS timestamp is computed using the UVC timestamp which is assumed to be synchronised to the 
-		// frame timestamp of the device. Essentially we ignore the USB transmission time.
-		// We account for the time lag that happens when the data is captured (the sensor time)
-		// and when the data is actually transmitted.
+            		// NEW METHOD:
+            		// The ROS timestamp is computed using the UVC timestamp which is assumed to be synchronised to the
+            		// frame timestamp of the device. Essentially we ignore the USB transmission time.
+            		// We account for the time lag that happens when the data is captured (the sensor time)
+            		// and when the data is actually transmitted.
                 if (false == _intialize_time_base)
                 {
                     if (RS2_TIMESTAMP_DOMAIN_SYSTEM_TIME == frame.get_frame_timestamp_domain())
@@ -549,24 +569,24 @@ void BaseRealSenseNode::setupStreams()
                 if (_sync_frames)
                     t = ros::Time::now();
                 else
-		{
-		    // OLD:
+            		{
+            		    // OLD:
                     // t = ros::Time(_ros_time_base.toSec()+ (/*ms*/ frame.get_timestamp() - /*ms*/ _camera_time_base) / /*ms to seconds*/ 1000);
-		    // NEW:
-		    // Time from the UVC driver (System time)
-		    rs2_metadata_type t_uvc_driver = frame.get_frame_metadata(RS2_FRAME_METADATA_BACKEND_TIMESTAMP);
-		    // Time at the middle of the sensor exposure (Device clock)
-		    rs2_metadata_type t_sensor = frame.get_frame_metadata(RS2_FRAME_METADATA_SENSOR_TIMESTAMP);
-		    // Time at the moment of transmission of data (Device clock)
-		    rs2_metadata_type t_frame = frame.get_frame_metadata(RS2_FRAME_METADATA_FRAME_TIMESTAMP);
-		    // Time at which the data is capture  = UVC_time - (Frame_time-Sensor_time)
-		    t = ros::Time( /*ms*/ t_uvc_driver * /*ms to seconds*/ 1e-3 - (/*us*/ t_frame- /*us*/ t_sensor) * /*us to seconds*/ 1e-6);
-		    // CHECK OFFSET FROM ROS TIME NOW :
-		    // Ros time now
-		    // ros::Time t2 = ros::Time::now();
-		    // Print offset from computed time of capture from ros time now
-		    // ROS_INFO_STREAM("Sensor - Now ms"<< (t.toSec() - t2.toSec())*1000.0);
-		}
+            		    // NEW:
+            		    // Time from the UVC driver (System time)
+            		    rs2_metadata_type t_uvc_driver = frame.get_frame_metadata(RS2_FRAME_METADATA_BACKEND_TIMESTAMP);
+            		    // Time at the middle of the sensor exposure (Device clock)
+            		    rs2_metadata_type t_sensor = frame.get_frame_metadata(RS2_FRAME_METADATA_SENSOR_TIMESTAMP);
+            		    // Time at the moment of transmission of data (Device clock)
+            		    rs2_metadata_type t_frame = frame.get_frame_metadata(RS2_FRAME_METADATA_FRAME_TIMESTAMP);
+            		    // Time at which the data is capture  = UVC_time - (Frame_time-Sensor_time)
+            		    t = ros::Time( /*ms*/ t_uvc_driver * /*ms to seconds*/ 1e-3 - (/*us*/ t_frame- /*us*/ t_sensor) * /*us to seconds*/ 1e-6);
+            		    // CHECK OFFSET FROM ROS TIME NOW :
+            		    // Ros time now
+            		    // ros::Time t2 = ros::Time::now();
+            		    // Print offset from computed time of capture from ros time now
+            		    // ROS_INFO_STREAM("Sensor - Now ms"<< (t.toSec() - t2.toSec())*1000.0);
+            		}
 
                 std::map<stream_index_pair, bool> is_frame_arrived(_is_frame_arrived);
                 std::vector<rs2::frame> frames;
@@ -1265,6 +1285,7 @@ void BaseRealSenseNode::publishFrame(rs2::frame f, const ros::Time& t,
         image_publisher.publish(img);
         ROS_DEBUG("%s stream published", rs2_stream_to_string(f.get_profile().stream_type()));
 
+        _output_sensor_diagnostic[stream]->tick();
     }
 }
 

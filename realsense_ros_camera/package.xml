@@ -17,6 +17,8 @@
   <build_depend>tf</build_depend>
   <build_depend>dynamic_reconfigure</build_depend>
   <build_depend>librealsense2</build_depend>
+  <build_depend>mbot_diagnostics</build_depend>
+
   <run_depend>image_transport</run_depend>
   <run_depend>cv_bridge</run_depend>
   <run_depend>nodelet</run_depend>
@@ -30,6 +32,7 @@
   <run_depend>librealsense2</run_depend>
   <run_depend>depth_image_proc</run_depend>
   <run_depend>image_proc</run_depend>
+  <run_depend>mbot_diagnostics</run_depend>
   <export>
     <nodelet plugin="${prefix}/nodelet_plugins.xml" />
   </export>

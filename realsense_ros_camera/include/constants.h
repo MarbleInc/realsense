@@ -51,7 +51,6 @@ namespace realsense_ros_camera
     const int FISHEYE_WIDTH   = 640;
     const int FISHEYE_HEIGHT  = 480;
 
-
     const int DEPTH_FPS       = 30;
     const int INFRA1_FPS      = 30;
     const int INFRA2_FPS      = 30;
@@ -60,6 +59,13 @@ namespace realsense_ros_camera
     const int GYRO_FPS        = 1000;
     const int ACCEL_FPS       = 1000;
 
+    const double DEPTH_FPS_TOLERANCE       = 0.1;
+    const double INFRA1_FPS_TOLERANCE      = 0.1;
+    const double INFRA2_FPS_TOLERANCE      = 0.1;
+    const double COLOR_FPS_TOLERANCE       = 0.1;
+    const double FISHEYE_FPS_TOLERANCE     = 0.1;
+    const double GYRO_FPS_TOLERANCE        = 0.001;
+    const double ACCEL_FPS_TOLERANCE       = 0.001;
 
     const bool ENABLE_DEPTH   = true;
     const bool ENABLE_INFRA1  = true;
