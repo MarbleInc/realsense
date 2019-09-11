@@ -322,7 +322,7 @@ void BaseRealSenseNode::setupPublishers()
             output_image_params.freq_warning_thresholds = warning_freq_params;
             output_image_params.time_window_sec = 10.0;
 
-            _output_sensor_diagnostic[stream] = new marble::OutputDiagnostic(image_raw.str(), _node_handle, output_image_params);
+            _output_sensor_diagnostic[stream] = new marble::OutputDiagnostic(_namespace+"/"+image_raw.str(), _node_handle, output_image_params);
             _output_sensor_diagnostic[stream]->addToUpdater(_updater[stream]);
 
             if (_align_depth && (stream != DEPTH))
