@@ -312,7 +312,7 @@ void BaseRealSenseNode::setupPublishers()
             _image_publishers[stream] = image_transport.advertise(image_raw.str(), 1);
             _info_publisher[stream] = _node_handle.advertise<sensor_msgs::CameraInfo>(camera_info.str(), 1);
 
-            _updater[stream] = new marble::DiagnosticUpdater(image_raw.str(), _node_handle);
+            _updater[stream] = new marble::DiagnosticUpdater(_namespace + "/" + image_raw.str(), _node_handle);
 
             marble::diagnostics::FrequencyParams warning_freq_params;
             warning_freq_params.min_frequency = (double)_fps[stream] - _fps_tolerance[stream];
@@ -322,7 +322,7 @@ void BaseRealSenseNode::setupPublishers()
             output_image_params.freq_warning_thresholds = warning_freq_params;
             output_image_params.time_window_sec = 10.0;
 
-            _output_sensor_diagnostic[stream] = new marble::OutputDiagnostic(_namespace+"/"+image_raw.str(), _node_handle, output_image_params);
+            _output_sensor_diagnostic[stream] = new marble::OutputDiagnostic(_namespace + "/" + image_raw.str(), _node_handle, output_image_params);
             _output_sensor_diagnostic[stream]->addToUpdater(_updater[stream]);
 
             if (_align_depth && (stream != DEPTH))
