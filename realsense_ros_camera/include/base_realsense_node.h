@@ -35,6 +35,10 @@ namespace realsense_ros_camera
                           const std::string& serial_no);
 
         virtual void publishTopics() override;
+
+        // Generate a list of the stream types.
+        // Check the stream types which have a non empty diagnostic and updater
+        // pointers and delete them.
         virtual ~BaseRealSenseNode()
         {
           std::vector<stream_index_pair> image_stream_types;
@@ -177,6 +181,7 @@ namespace realsense_ros_camera
         std::map<stream_index_pair, bool> _is_frame_arrived;
         const std::string _namespace;
 
+        // Map the stream to the diagnostic updater so that there is an updater per stream
         std::map<stream_index_pair, marble::DiagnosticUpdater*> _updater;
         std::map<stream_index_pair, marble::OutputDiagnostic*> _output_sensor_diagnostic;
 
