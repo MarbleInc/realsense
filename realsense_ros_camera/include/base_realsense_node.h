@@ -9,6 +9,8 @@
 #include <realsense_ros_camera/rs415_paramsConfig.h>
 #include <realsense_ros_camera/rs435_paramsConfig.h>
 
+#include <mbot_diagnostics/diagnostic_updater.h>
+#include <mbot_diagnostics/output_diagnostic.h>
 
 namespace realsense_ros_camera
 {
@@ -33,7 +35,34 @@ namespace realsense_ros_camera
                           const std::string& serial_no);
 
         virtual void publishTopics() override;
-        virtual ~BaseRealSenseNode() {}
+
+        // Generate a list of the stream types.
+        // Check the stream types which have a non empty diagnostic and updater
+        // pointers and delete them.
+        virtual ~BaseRealSenseNode()
+        {
+          std::vector<stream_index_pair> image_stream_types;
+          for (auto& stream_vec : IMAGE_STREAMS)
+          {
+              for (auto& stream : stream_vec)
+              {
+                  image_stream_types.push_back(stream);
+              }
+          }
+
+          for (auto& stream : image_stream_types)
+          {
+            if (_output_sensor_diagnostic[stream]) {
+              delete _output_sensor_diagnostic[stream];
+              _output_sensor_diagnostic[stream] = nullptr;
+            }
+
+            if (_updater[stream]) {
+              delete _updater[stream];
+              _updater[stream] = nullptr;
+            }
+          }
+        }
 
     protected:
 
@@ -106,6 +135,7 @@ namespace realsense_ros_camera
         std::map<stream_index_pair, int> _width;
         std::map<stream_index_pair, int> _height;
         std::map<stream_index_pair, int> _fps;
+        std::map<stream_index_pair, double> _fps_tolerance;
         std::map<stream_index_pair, bool> _enable;
         std::map<stream_index_pair, std::string> _stream_name;
         tf2_ros::TransformBroadcaster _static_tf_broadcaster;
@@ -151,6 +181,10 @@ namespace realsense_ros_camera
         std::map<stream_index_pair, bool> _is_frame_arrived;
         const std::string _namespace;
 
+        // Map the stream to the diagnostic updater so that there is an updater per stream
+        std::map<stream_index_pair, marble::DiagnosticUpdater*> _updater;
+        std::map<stream_index_pair, marble::OutputDiagnostic*> _output_sensor_diagnostic;
+
     // Functionality from BaseD400Node
     public:
         virtual void registerDynamicReconfigCb() override;
@@ -166,7 +200,6 @@ namespace realsense_ros_camera
 
         std::shared_ptr<dynamic_reconfigure::Server<base_d400_paramsConfig>> _server;
         dynamic_reconfigure::Server<base_d400_paramsConfig>::CallbackType _f;
-
     };//end class
 
 }
