@@ -16,7 +16,7 @@ find_package(catkin REQUIRED COMPONENTS
     image_transport
     tf
     ddynamic_reconfigure
-    diagnostic_updater
+    mbot_diagnostics
     )
 
 if(BUILD_WITH_OPENMP)
@@ -75,6 +75,7 @@ catkin_package(
     cv_bridge
     image_transport
     ddynamic_reconfigure
+    mbot_diagnostics
     nav_msgs
     )
 

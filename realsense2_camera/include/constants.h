@@ -33,8 +33,8 @@ namespace realsense2_camera
     const uint16_t RS435_RGB_PID    = 0x0b07; // AWGC
     const uint16_t RS435i_RGB_PID   = 0x0B3A; // AWGC_MM
     const uint16_t RS405_PID        = 0x0b0c; // DS5U
-    const uint16_t RS_T265_PID      = 0x0b37; // 
-    
+    const uint16_t RS_T265_PID      = 0x0b37; //
+
 
     const bool ALIGN_DEPTH    = false;
     const bool POINTCLOUD     = false;
@@ -48,8 +48,31 @@ namespace realsense2_camera
     const int IMAGE_HEIGHT    = 480;
     const int IMAGE_FPS       = 30;
 
+    const int INFRA2_WIDTH    = 640;
+    const int INFRA2_HEIGHT   = 480;
+
+    const int COLOR_WIDTH     = 640;
+    const int COLOR_HEIGHT    = 480;
+
+    const int FISHEYE_WIDTH   = 640;
+    const int FISHEYE_HEIGHT  = 480;
+
+    const int DEPTH_FPS       = 30;
+    const int INFRA1_FPS      = 30;
+    const int INFRA2_FPS      = 30;
+    const int COLOR_FPS       = 30;
+    const int FISHEYE_FPS     = 30;
+    const int GYRO_FPS        = 1000;
+    const int ACCEL_FPS       = 1000;
     const int IMU_FPS         = 0;
 
+    const double DEPTH_FPS_TOLERANCE       = 0.1;
+    const double INFRA1_FPS_TOLERANCE      = 0.1;
+    const double INFRA2_FPS_TOLERANCE      = 0.1;
+    const double COLOR_FPS_TOLERANCE       = 0.1;
+    const double FISHEYE_FPS_TOLERANCE     = 0.1;
+    const double GYRO_FPS_TOLERANCE        = 0.001;
+    const double ACCEL_FPS_TOLERANCE       = 0.001;
 
     const bool ENABLE_DEPTH   = true;
     const bool ENABLE_INFRA1  = true;
