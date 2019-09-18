@@ -59,13 +59,11 @@ namespace realsense_ros_camera
     const int GYRO_FPS        = 1000;
     const int ACCEL_FPS       = 1000;
 
-    const double DEPTH_FPS_TOLERANCE       = 0.1;
-    const double INFRA1_FPS_TOLERANCE      = 0.1;
-    const double INFRA2_FPS_TOLERANCE      = 0.1;
-    const double COLOR_FPS_TOLERANCE       = 0.1;
-    const double FISHEYE_FPS_TOLERANCE     = 0.1;
-    const double GYRO_FPS_TOLERANCE        = 0.001;
-    const double ACCEL_FPS_TOLERANCE       = 0.001;
+    const float DIAGNOSTIC_MIN_FREQUENCY          = 0.0;
+    const float DIAGNOSTIC_MAX_FREQUENCY          = 2000.0;
+    const float DIAGNOSTIC_MAX_INTERVAL_SEC       = 1.0;
+    const double DIAGNOSTIC_TIME_WINDOW_SEC        = 5.0;
+
 
     const bool ENABLE_DEPTH   = true;
     const bool ENABLE_INFRA1  = true;

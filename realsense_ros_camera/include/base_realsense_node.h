@@ -83,6 +83,8 @@ namespace realsense_ros_camera
         };
 
         static std::string getNamespaceStr();
+        void getDiagnosticParameters(const std::string& prefix,
+          marble::OutputDiagnosticParams& params);
         void getParameters();
         void setupDevice();
         void setupPublishers();
@@ -135,7 +137,7 @@ namespace realsense_ros_camera
         std::map<stream_index_pair, int> _width;
         std::map<stream_index_pair, int> _height;
         std::map<stream_index_pair, int> _fps;
-        std::map<stream_index_pair, double> _fps_tolerance;
+        std::map<stream_index_pair, marble::OutputDiagnosticParams> _output_diagnostic_params;
         std::map<stream_index_pair, bool> _enable;
         std::map<stream_index_pair, std::string> _stream_name;
         tf2_ros::TransformBroadcaster _static_tf_broadcaster;
