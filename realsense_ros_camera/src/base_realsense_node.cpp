@@ -99,11 +99,11 @@ void BaseRealSenseNode::getDiagnosticParameters(const std::string& prefix,
   marble::OutputDiagnosticParams& params)
   {
     // Read and store the freq_warning_thresholds
-    std::string warning_prefix = prefix+"freq_warning_thresholds/";
+    std::string warning_prefix = prefix+"/freq_warning_thresholds/";
     marble::diagnostics::FrequencyParams freq;
     _pnh.param(warning_prefix+"min_frequency",freq.min_frequency, DIAGNOSTIC_MIN_FREQUENCY);
-    _pnh.param(warning_prefix+"max_frequency",freq.min_frequency, DIAGNOSTIC_MIN_FREQUENCY);
-    _pnh.param(warning_prefix+"max_interval_sec",freq.min_frequency, DIAGNOSTIC_MIN_FREQUENCY);
+    _pnh.param(warning_prefix+"max_frequency",freq.max_frequency, DIAGNOSTIC_MAX_FREQUENCY);
+    _pnh.param(warning_prefix+"max_interval_sec",freq.max_interval_sec, DIAGNOSTIC_MAX_INTERVAL_SEC);
     params.freq_warning_thresholds = freq;
 
     // Read and store the time_window_sec
@@ -179,13 +179,13 @@ void BaseRealSenseNode::getParameters()
     _pnh.param("aligned_depth_to_infra2_frame_id",  _depth_aligned_frame_id[INFRA2],  DEFAULT_ALIGNED_DEPTH_TO_INFRA2_FRAME_ID);
     _pnh.param("aligned_depth_to_fisheye_frame_id", _depth_aligned_frame_id[FISHEYE], DEFAULT_ALIGNED_DEPTH_TO_FISHEYE_FRAME_ID);
 
-    getDiagnosticParameters("depth_dependency/",_output_diagnostic_params[DEPTH]);
-    getDiagnosticParameters("infra1_dependency/",  _output_diagnostic_params[INFRA1]);
-    getDiagnosticParameters("infra2_dependency/",  _output_diagnostic_params[INFRA2]);
-    getDiagnosticParameters("color_dependency/",   _output_diagnostic_params[COLOR]);
-    getDiagnosticParameters("fisheye_dependency/", _output_diagnostic_params[FISHEYE]);
-    getDiagnosticParameters("gyro_dependency/",    _output_diagnostic_params[GYRO]);
-    getDiagnosticParameters("accel_dependency/",   _output_diagnostic_params[ACCEL]);
+    getDiagnosticParameters("depth_dependency",   _output_diagnostic_params[DEPTH]);
+    getDiagnosticParameters("infra1_dependency",  _output_diagnostic_params[INFRA1]);
+    getDiagnosticParameters("infra2_dependency",  _output_diagnostic_params[INFRA2]);
+    getDiagnosticParameters("color_dependency",   _output_diagnostic_params[COLOR]);
+    getDiagnosticParameters("fisheye_dependency", _output_diagnostic_params[FISHEYE]);
+    getDiagnosticParameters("gyro_dependency",    _output_diagnostic_params[GYRO]);
+    getDiagnosticParameters("accel_dependency",   _output_diagnostic_params[ACCEL]);
 }
 
 void BaseRealSenseNode::setupDevice()
