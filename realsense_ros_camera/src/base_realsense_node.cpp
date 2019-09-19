@@ -101,13 +101,13 @@ void BaseRealSenseNode::getDiagnosticParameters(const std::string& prefix,
     // Read and store the freq_warning_thresholds
     std::string warning_prefix = prefix + "/freq_warning_thresholds/";
     marble::diagnostics::FrequencyParams freq;
-    _pnh.param(warning_prefix+"min_frequency",freq.min_frequency, DIAGNOSTIC_MIN_FREQUENCY);
-    _pnh.param(warning_prefix+"max_frequency",freq.max_frequency, DIAGNOSTIC_MAX_FREQUENCY);
-    _pnh.param(warning_prefix+"max_interval_sec",freq.max_interval_sec, DIAGNOSTIC_MAX_INTERVAL_SEC);
+    _pnh.param(warning_prefix + "min_frequency", freq.min_frequency, DIAGNOSTIC_MIN_FREQUENCY);
+    _pnh.param(warning_prefix + "max_frequency", freq.max_frequency, DIAGNOSTIC_MAX_FREQUENCY);
+    _pnh.param(warning_prefix + "max_interval_sec", freq.max_interval_sec, DIAGNOSTIC_MAX_INTERVAL_SEC);
     params.freq_warning_thresholds = freq;
 
     // Read and store the time_window_sec
-    _pnh.param(prefix+"time_window_sec",params.time_window_sec, DIAGNOSTIC_TIME_WINDOW_SEC);
+    _pnh.param(prefix + "time_window_sec", params.time_window_sec, DIAGNOSTIC_TIME_WINDOW_SEC);
   }
 
 void BaseRealSenseNode::getParameters()
