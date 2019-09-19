@@ -99,7 +99,7 @@ void BaseRealSenseNode::getDiagnosticParameters(const std::string& prefix,
   marble::OutputDiagnosticParams& params)
   {
     // Read and store the freq_warning_thresholds
-    std::string warning_prefix = prefix+"/freq_warning_thresholds/";
+    std::string warning_prefix = prefix + "/freq_warning_thresholds/";
     marble::diagnostics::FrequencyParams freq;
     _pnh.param(warning_prefix+"min_frequency",freq.min_frequency, DIAGNOSTIC_MIN_FREQUENCY);
     _pnh.param(warning_prefix+"max_frequency",freq.max_frequency, DIAGNOSTIC_MAX_FREQUENCY);
@@ -330,7 +330,7 @@ void BaseRealSenseNode::setupPublishers()
 
             _updater[stream] = new marble::DiagnosticUpdater("/"+_namespace + "/" + image_raw.str(), _node_handle);
 
-            _output_sensor_diagnostic[stream] = new marble::OutputDiagnostic("/"+_namespace + "/" + image_raw.str(), _node_handle, _output_diagnostic_params[stream]);
+            _output_sensor_diagnostic[stream] = new marble::OutputDiagnostic("/" + _namespace + "/" + image_raw.str(), _node_handle, _output_diagnostic_params[stream]);
             _output_sensor_diagnostic[stream]->addToUpdater(_updater[stream]);
 
             if (_align_depth && (stream != DEPTH))
