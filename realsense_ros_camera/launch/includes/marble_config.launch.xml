@@ -56,13 +56,6 @@
   <arg name="color_fps"           default="15"/>
   <arg name="gyro_fps"            default="1000"/>
   <arg name="accel_fps"           default="1000"/>
-  <arg name="fisheye_fps_tolerance"         default="0.1"/>
-  <arg name="depth_fps_tolerance"           default="0.1"/>
-  <arg name="infra1_fps_tolerance"          default="0.1"/>
-  <arg name="infra2_fps_tolerance"          default="0.1"/>
-  <arg name="color_fps_tolerance"           default="0.1"/>
-  <arg name="gyro_fps_tolerance"            default="0.001"/>
-  <arg name="accel_fps_tolerance"           default="0.001"/>
   <arg name="enable_imu"          default="true"/>
   <arg name="laser_power"         default="12"/>
 
@@ -125,13 +118,6 @@
     <param name="color_fps"                type="int"  value="$(arg color_fps)"/>
     <param name="gyro_fps"                 type="int"  value="$(arg gyro_fps)"/>
     <param name="accel_fps"                type="int"  value="$(arg accel_fps)"/>
-    <param name="fisheye_fps_tolerance"              type="double"  value="$(arg fisheye_fps_tolerance)"/>
-    <param name="depth_fps_tolerance"                type="double"  value="$(arg depth_fps_tolerance)"/>
-    <param name="infra1_fps_tolerance"               type="double"  value="$(arg infra1_fps_tolerance)"/>
-    <param name="infra2_fps_tolerance"               type="double"  value="$(arg infra2_fps_tolerance)"/>
-    <param name="color_fps_tolerance"                type="double"  value="$(arg color_fps_tolerance)"/>
-    <param name="gyro_fps_tolerance"                 type="double"  value="$(arg gyro_fps_tolerance)"/>
-    <param name="accel_fps_tolerance"                type="double"  value="$(arg accel_fps_tolerance)"/>
     <param name="enable_imu"               type="bool" value="$(arg enable_imu)"/>
 
     <param name="base_frame_id"            type="str"  value="$(arg base_frame_id)"/>
@@ -154,6 +140,44 @@
     <param name="camera_aligned_depth_to_infra1_frame_id"  type="str"  value="camera_aligned_depth_to_infra1_frame"/>
     <param name="camera_aligned_depth_to_infra2_frame_id"  type="str"  value="camera_aligned_depth_to_infra2_frame"/>
     <param name="camera_aligned_depth_to_fisheye_frame_id" type="str"  value="camera_aligned_depth_to_fisheye_frame"/>
+
+    <rosparam command="load">
+      fisheye_dependency:
+        freq_warning_thresholds:
+          min_frequency: 14
+          max_frequency: 16
+          max_interval_sec: 0.2
+      depth_dependency:
+        freq_warning_thresholds:
+          min_frequency: 14
+          max_frequency: 16
+          max_interval_sec: 0.2
+      infra1_dependency:
+        freq_warning_thresholds:
+          min_frequency: 14
+          max_frequency: 16
+          max_interval_sec: 0.2
+      infra2_dependency:
+        freq_warning_thresholds:
+          min_frequency: 14
+          max_frequency: 16
+          max_interval_sec: 0.2
+      color_dependency:
+        freq_warning_thresholds:
+          min_frequency: 14
+          max_frequency: 16
+          max_interval_sec: 0.2
+      gyro_dependency:
+        freq_warning_thresholds:
+          min_frequency: 0
+          max_frequency: 2000
+          max_interval_sec: 0.01
+      accel_dependency:
+        freq_warning_thresholds:
+          min_frequency: 0
+          max_frequency: 2000
+          max_interval_sec: 0.01
+    </rosparam>
   </node>
 
 

@@ -95,6 +95,21 @@ void BaseRealSenseNode::publishTopics()
     &BaseRealSenseNode::timerTfCallback, this);
 }
 
+void BaseRealSenseNode::getDiagnosticParameters(const std::string& prefix,
+  marble::OutputDiagnosticParams& params)
+  {
+    // Read and store the freq_warning_thresholds
+    std::string warning_prefix = prefix + "/freq_warning_thresholds/";
+    marble::diagnostics::FrequencyParams freq;
+    _pnh.param(warning_prefix + "min_frequency", freq.min_frequency, DIAGNOSTIC_MIN_FREQUENCY);
+    _pnh.param(warning_prefix + "max_frequency", freq.max_frequency, DIAGNOSTIC_MAX_FREQUENCY);
+    _pnh.param(warning_prefix + "max_interval_sec", freq.max_interval_sec, DIAGNOSTIC_MAX_INTERVAL_SEC);
+    params.freq_warning_thresholds = freq;
+
+    // Read and store the time_window_sec
+    _pnh.param(prefix + "time_window_sec", params.time_window_sec, DIAGNOSTIC_TIME_WINDOW_SEC);
+  }
+
 void BaseRealSenseNode::getParameters()
 {
     ROS_INFO("getParameters...");
@@ -110,42 +125,35 @@ void BaseRealSenseNode::getParameters()
     _pnh.param("depth_width", _width[DEPTH], DEPTH_WIDTH);
     _pnh.param("depth_height", _height[DEPTH], DEPTH_HEIGHT);
     _pnh.param("depth_fps", _fps[DEPTH], DEPTH_FPS);
-    _pnh.param("depth_fps_tolerance", _fps_tolerance[DEPTH], DEPTH_FPS_TOLERANCE);
     _pnh.param("enable_depth", _enable[DEPTH], ENABLE_DEPTH);
     _aligned_depth_images[DEPTH].resize(_width[DEPTH] * _height[DEPTH] * _unit_step_size[DEPTH]);
 
     _pnh.param("infra1_width", _width[INFRA1], INFRA1_WIDTH);
     _pnh.param("infra1_height", _height[INFRA1], INFRA1_HEIGHT);
     _pnh.param("infra1_fps", _fps[INFRA1], INFRA1_FPS);
-    _pnh.param("infra1_fps_tolerance", _fps_tolerance[INFRA1], INFRA1_FPS_TOLERANCE);
     _pnh.param("enable_infra1", _enable[INFRA1], ENABLE_INFRA1);
     _aligned_depth_images[INFRA1].resize(_width[DEPTH] * _height[DEPTH] * _unit_step_size[DEPTH]);
 
     _pnh.param("infra2_width", _width[INFRA2], INFRA2_WIDTH);
     _pnh.param("infra2_height", _height[INFRA2], INFRA2_HEIGHT);
     _pnh.param("infra2_fps", _fps[INFRA2], INFRA2_FPS);
-    _pnh.param("infra2_fps_tolerance", _fps_tolerance[INFRA2], INFRA2_FPS_TOLERANCE);
     _pnh.param("enable_infra2", _enable[INFRA2], ENABLE_INFRA2);
     _aligned_depth_images[INFRA2].resize(_width[DEPTH] * _height[DEPTH] * _unit_step_size[DEPTH]);
 
     _pnh.param("color_width", _width[COLOR], COLOR_WIDTH);
     _pnh.param("color_height", _height[COLOR], COLOR_HEIGHT);
     _pnh.param("color_fps", _fps[COLOR], COLOR_FPS);
-    _pnh.param("color_fps_tolerance", _fps_tolerance[COLOR], COLOR_FPS_TOLERANCE);
     _pnh.param("enable_color", _enable[COLOR], ENABLE_COLOR);
     _aligned_depth_images[COLOR].resize(_width[DEPTH] * _height[DEPTH] * _unit_step_size[DEPTH]);
 
     _pnh.param("fisheye_width", _width[FISHEYE], FISHEYE_WIDTH);
     _pnh.param("fisheye_height", _height[FISHEYE], FISHEYE_HEIGHT);
     _pnh.param("fisheye_fps", _fps[FISHEYE], FISHEYE_FPS);
-    _pnh.param("fisheye_fps_tolerance", _fps_tolerance[FISHEYE], FISHEYE_FPS_TOLERANCE);
     _pnh.param("enable_fisheye", _enable[FISHEYE], ENABLE_FISHEYE);
     _aligned_depth_images[FISHEYE].resize(_width[DEPTH] * _height[DEPTH] * _unit_step_size[DEPTH]);
 
     _pnh.param("gyro_fps", _fps[GYRO], GYRO_FPS);
-    _pnh.param("gyro_fps_tolerance", _fps_tolerance[GYRO], GYRO_FPS_TOLERANCE);
     _pnh.param("accel_fps", _fps[ACCEL], ACCEL_FPS);
-    _pnh.param("accel_fps_tolerance", _fps_tolerance[ACCEL], ACCEL_FPS_TOLERANCE);
     _pnh.param("enable_imu", _enable[GYRO], ENABLE_IMU);
     _pnh.param("enable_imu", _enable[ACCEL], ENABLE_IMU);
 
@@ -170,6 +178,14 @@ void BaseRealSenseNode::getParameters()
     _pnh.param("aligned_depth_to_infra1_frame_id",  _depth_aligned_frame_id[INFRA1],  DEFAULT_ALIGNED_DEPTH_TO_INFRA1_FRAME_ID);
     _pnh.param("aligned_depth_to_infra2_frame_id",  _depth_aligned_frame_id[INFRA2],  DEFAULT_ALIGNED_DEPTH_TO_INFRA2_FRAME_ID);
     _pnh.param("aligned_depth_to_fisheye_frame_id", _depth_aligned_frame_id[FISHEYE], DEFAULT_ALIGNED_DEPTH_TO_FISHEYE_FRAME_ID);
+
+    getDiagnosticParameters("depth_dependency",   _output_diagnostic_params[DEPTH]);
+    getDiagnosticParameters("infra1_dependency",  _output_diagnostic_params[INFRA1]);
+    getDiagnosticParameters("infra2_dependency",  _output_diagnostic_params[INFRA2]);
+    getDiagnosticParameters("color_dependency",   _output_diagnostic_params[COLOR]);
+    getDiagnosticParameters("fisheye_dependency", _output_diagnostic_params[FISHEYE]);
+    getDiagnosticParameters("gyro_dependency",    _output_diagnostic_params[GYRO]);
+    getDiagnosticParameters("accel_dependency",   _output_diagnostic_params[ACCEL]);
 }
 
 void BaseRealSenseNode::setupDevice()
@@ -314,15 +330,7 @@ void BaseRealSenseNode::setupPublishers()
 
             _updater[stream] = new marble::DiagnosticUpdater("/"+_namespace + "/" + image_raw.str(), _node_handle);
 
-            marble::diagnostics::FrequencyParams warning_freq_params;
-            warning_freq_params.min_frequency = (double)_fps[stream] - _fps_tolerance[stream];
-            warning_freq_params.max_frequency = (double)_fps[stream] + _fps_tolerance[stream];
-
-            marble::OutputDiagnosticParams output_image_params;
-            output_image_params.freq_warning_thresholds = warning_freq_params;
-            output_image_params.time_window_sec = 10.0;
-
-            _output_sensor_diagnostic[stream] = new marble::OutputDiagnostic("/"+_namespace + "/" + image_raw.str(), _node_handle, output_image_params);
+            _output_sensor_diagnostic[stream] = new marble::OutputDiagnostic("/" + _namespace + "/" + image_raw.str(), _node_handle, _output_diagnostic_params[stream]);
             _output_sensor_diagnostic[stream]->addToUpdater(_updater[stream]);
 
             if (_align_depth && (stream != DEPTH))
