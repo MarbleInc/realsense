@@ -165,14 +165,14 @@ void BaseRealSenseNode::setupErrorCallback()
     {
         s.set_notifications_callback([&](const rs2::notification& n)
         {
-            std::vector<std::string> error_strings({"RT IC2 Config error", 
+            std::vector<std::string> error_strings({"RT IC2 Config error",
                                                     "Motion Module force pause",
                                                     "stream start failure"});
             if (n.get_severity() >= RS2_LOG_SEVERITY_ERROR)
             {
                 ROS_WARN_STREAM("Hardware Notification:" << n.get_description() << "," << n.get_timestamp() << "," << n.get_severity() << "," << n.get_category());
             }
-            if (error_strings.end() != find_if(error_strings.begin(), error_strings.end(), [&n] (std::string err) 
+            if (error_strings.end() != find_if(error_strings.begin(), error_strings.end(), [&n] (std::string err)
                                         {return (n.get_description().find(err) != std::string::npos); }))
             {
                 ROS_ERROR_STREAM("Hardware Reset is needed. use option: initial_reset:=true");
@@ -198,6 +198,9 @@ void BaseRealSenseNode::publishTopics()
     publishIntrinsics();
     startMonitoring();
     ROS_INFO_STREAM("RealSense Node Is Up!");
+    // Create a timer at 100Hz to publish all the Realsense transforms periodically.
+    _static_tf_timer = _node_handle.createTimer(ros::Duration(1.0/30.0),
+    &BaseRealSenseNode::timerTfCallback, this);
 }
 
 void BaseRealSenseNode::runFirstFrameInitialization(rs2_stream stream_type)
@@ -335,14 +338,14 @@ void BaseRealSenseNode::set_sensor_auto_exposure_roi(rs2::sensor sensor)
     }
 }
 
-void BaseRealSenseNode::readAndSetDynamicParam(ros::NodeHandle& nh1, std::shared_ptr<ddynamic_reconfigure::DDynamicReconfigure> ddynrec, 
-                                               const std::string option_name, const int min_val, const int max_val, rs2::sensor sensor, 
+void BaseRealSenseNode::readAndSetDynamicParam(ros::NodeHandle& nh1, std::shared_ptr<ddynamic_reconfigure::DDynamicReconfigure> ddynrec,
+                                               const std::string option_name, const int min_val, const int max_val, rs2::sensor sensor,
                                                int* option_value)
 {
     nh1.param(option_name, *option_value, *option_value); //param (const std::string &param_name, T &param_val, const T &default_val) const
     if (*option_value < min_val) *option_value = min_val;
     if (*option_value > max_val) *option_value = max_val;
-    
+
     ddynrec->registerVariable<int>(
         option_name, *option_value, [this, sensor, option_name](int new_value){set_auto_exposure_roi(option_name, sensor, new_value);},
         "auto-exposure " + option_name + " coordinate", min_val, max_val);
@@ -520,6 +523,21 @@ rs2_stream BaseRealSenseNode::rs2_string_to_stream(std::string str)
     throw std::runtime_error("Unknown stream string " + str);
 }
 
+void BaseRealSenseNode::getDiagnosticParameters(const std::string& prefix,
+  marble::OutputDiagnosticParams& params)
+  {
+    // Read and store the freq_warning_thresholds
+    std::string warning_prefix = prefix + "/freq_warning_thresholds/";
+    marble::diagnostics::FrequencyParams freq;
+    _pnh.param(warning_prefix + "min_frequency", freq.min_frequency, DIAGNOSTIC_MIN_FREQUENCY);
+    _pnh.param(warning_prefix + "max_frequency", freq.max_frequency, DIAGNOSTIC_MAX_FREQUENCY);
+    _pnh.param(warning_prefix + "max_interval_sec", freq.max_interval_sec, DIAGNOSTIC_MAX_INTERVAL_SEC);
+    params.freq_warning_thresholds = freq;
+
+    // Read and store the time_window_sec
+    _pnh.param(prefix + "time_window_sec", params.time_window_sec, DIAGNOSTIC_TIME_WINDOW_SEC);
+  }
+
 void BaseRealSenseNode::getParameters()
 {
     ROS_INFO("getParameters...");
@@ -612,6 +630,14 @@ void BaseRealSenseNode::getParameters()
     _pnh.param("angular_velocity_cov", _angular_velocity_cov, static_cast<double>(0.01));
     _pnh.param("hold_back_imu_for_frames", _hold_back_imu_for_frames, HOLD_BACK_IMU_FOR_FRAMES);
     _pnh.param("publish_odom_tf", _publish_odom_tf, PUBLISH_ODOM_TF);
+
+    getDiagnosticParameters("depth_dependency",   _output_diagnostic_params[DEPTH]);
+    getDiagnosticParameters("infra1_dependency",  _output_diagnostic_params[INFRA1]);
+    getDiagnosticParameters("infra2_dependency",  _output_diagnostic_params[INFRA2]);
+    getDiagnosticParameters("color_dependency",   _output_diagnostic_params[COLOR]);
+    getDiagnosticParameters("fisheye_dependency", _output_diagnostic_params[FISHEYE]);
+    getDiagnosticParameters("gyro_dependency",    _output_diagnostic_params[GYRO]);
+    getDiagnosticParameters("accel_dependency",   _output_diagnostic_params[ACCEL]);
 }
 
 void BaseRealSenseNode::setupDevice()
@@ -787,6 +813,11 @@ void BaseRealSenseNode::setupPublishers()
             std::shared_ptr<FrequencyDiagnostics> frequency_diagnostics(new FrequencyDiagnostics(_fps[stream], stream_name, _serial_no));
             _image_publishers[stream] = {image_transport.advertise(image_raw.str(), 1), frequency_diagnostics};
             _info_publisher[stream] = _node_handle.advertise<sensor_msgs::CameraInfo>(camera_info.str(), 1);
+
+            _updater[stream] = new marble::DiagnosticUpdater("/"+_namespace + "/" + image_raw.str(), _node_handle);
+
+            _output_sensor_diagnostic[stream] = new marble::OutputDiagnostic("/" + _namespace + "/" + image_raw.str(), _node_handle, _output_diagnostic_params[stream]);
+            _output_sensor_diagnostic[stream]->addToUpdater(_updater[stream]);
 
             if (_align_depth && (stream != DEPTH) && stream.second < 2)
             {
@@ -1436,7 +1467,7 @@ void BaseRealSenseNode::pose_callback(rs2::frame frame)
         tf::Quaternion q(-msg.transform.rotation.x,-msg.transform.rotation.y,-msg.transform.rotation.z,msg.transform.rotation.w);
         tfv=tf::quatRotate(q,tfv);
         tf::vector3TFToMsg(tfv,v_msg.vector);
-	
+
         geometry_msgs::Vector3Stamped om_msg;
         om_msg.vector.x = -pose.angular_velocity.z;
         om_msg.vector.y = -pose.angular_velocity.x;
@@ -1444,7 +1475,7 @@ void BaseRealSenseNode::pose_callback(rs2::frame frame)
         tf::vector3MsgToTF(om_msg.vector,tfv);
         tfv=tf::quatRotate(q,tfv);
         tf::vector3TFToMsg(tfv,om_msg.vector);
-	
+
 
         nav_msgs::Odometry odom_msg;
         _seq[stream_index] += 1;
@@ -1476,9 +1507,14 @@ void BaseRealSenseNode::pose_callback(rs2::frame frame)
 void BaseRealSenseNode::frame_callback(rs2::frame frame)
 {
     _synced_imu_publisher->Pause();
-    
+
     try{
         double frame_time = frame.get_timestamp();
+
+        // NOTE: During the 2.0.2 -> 2.2.9 rebase update (~2019-11), we did not keep the alternate
+        // method we were using before, as described in
+        // https://github.com/MarbleInc/realsense/pull/7 for estimating time using frame metadata.
+        // We may add that back in in the future if necessary.
 
         // We compute a ROS timestamp which is based on an initial ROS time at point of first frame,
         // and the incremental timestamp from the camera.
@@ -1895,11 +1931,15 @@ void BaseRealSenseNode::publishStaticTransforms()
     rs2::stream_profile base_profile = getAProfile(_base_stream);
 
     // Publish static transforms
+    // The depth frame is used as the base link.
+    // Hence no additional transformation is done from base link to depth frame.
+    // The depth transform(s) below (base -> depth, depth -> optical depth) are handled with the
+    // Marble static tf broadcaster, therefore disabled here!
     if (_publish_tf)
     {
         for (std::pair<stream_index_pair, bool> ienable : _enable)
         {
-            if (ienable.second)
+            if (ienable.second && ienable.first != DEPTH)
             {
                 calcAndPublishStaticTransform(ienable.first, base_profile);
             }
@@ -2008,8 +2048,8 @@ void BaseRealSenseNode::publishPointCloud(rs2::points pc, const ros::Time& t, co
     if (use_texture)
     {
         std::set<rs2_format> available_formats{ rs2_format::RS2_FORMAT_RGB8, rs2_format::RS2_FORMAT_Y8 };
-        
-        texture_frame_itr = find_if(frameset.begin(), frameset.end(), [&texture_source_id, &available_formats] (rs2::frame f) 
+
+        texture_frame_itr = find_if(frameset.begin(), frameset.end(), [&texture_source_id, &available_formats] (rs2::frame f)
                                 {return (rs2_stream(f.get_profile().stream_type()) == texture_source_id) &&
                                             (available_formats.find(f.get_profile().format()) != available_formats.end()); });
         if (texture_frame_itr == frameset.end())
@@ -2049,7 +2089,7 @@ void BaseRealSenseNode::publishPointCloud(rs2::points pc, const ros::Time& t, co
     msg_pointcloud.is_dense = true;
 
     sensor_msgs::PointCloud2Modifier modifier(msg_pointcloud);
-    modifier.setPointCloud2FieldsByString(1, "xyz");    
+    modifier.setPointCloud2FieldsByString(1, "xyz");
 
     vertex = pc.get_vertices();
     if (use_texture)
@@ -2151,8 +2191,8 @@ rs2::stream_profile BaseRealSenseNode::getAProfile(const stream_index_pair& stre
 {
     const std::vector<rs2::stream_profile> profiles = _sensors[stream].get_stream_profiles();
     return *(std::find_if(profiles.begin(), profiles.end(),
-                                            [&stream] (const rs2::stream_profile& profile) { 
-                                                return ((profile.stream_type() == stream.first) && (profile.stream_index() == stream.second)); 
+                                            [&stream] (const rs2::stream_profile& profile) {
+                                                return ((profile.stream_type() == stream.first) && (profile.stream_index() == stream.second));
                                             }));
 }
 
@@ -2252,7 +2292,13 @@ void BaseRealSenseNode::publishFrame(rs2::frame f, const ros::Time& t,
         image_publisher.second->update();
         // ROS_INFO_STREAM("fid: " << cam_info.header.seq << ", time: " << std::setprecision (20) << t.toSec());
         ROS_DEBUG("%s stream published", rs2_stream_to_string(f.get_profile().stream_type()));
+
+        _output_sensor_diagnostic[stream]->tick();
     }
+}
+
+void BaseRealSenseNode::timerTfCallback(const ros::TimerEvent& event) {
+    publishStaticTransforms();
 }
 
 bool BaseRealSenseNode::getEnabledProfile(const stream_index_pair& stream_index, rs2::stream_profile& profile)

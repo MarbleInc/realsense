@@ -164,10 +164,11 @@ void RealSenseNodeFactory::getDevice(rs2::device_list list)
 		_initial_reset = false;
 		try
 		{
+			// TODO: Add sleep back in?
 			ROS_INFO("Resetting device...");
 			_device.hardware_reset();
 			_device = rs2::device();
-			
+
 		}
 		catch(const std::exception& ex)
 		{

@@ -6,8 +6,6 @@
 #include "../include/realsense_node_factory.h"
 #include <ddynamic_reconfigure/ddynamic_reconfigure.h>
 
-#include <diagnostic_updater/diagnostic_updater.h>
-#include <diagnostic_updater/update_functions.h>
 #include <sensor_msgs/CameraInfo.h>
 #include <sensor_msgs/PointCloud2.h>
 #include <sensor_msgs/point_cloud2_iterator.h>
@@ -16,6 +14,9 @@
 #include <tf/transform_broadcaster.h>
 #include <tf2_ros/static_transform_broadcaster.h>
 #include <condition_variable>
+
+#include <mbot_diagnostics/diagnostic_updater.h>
+#include <mbot_diagnostics/output_diagnostic.h>
 
 #include <queue>
 #include <mutex>
@@ -80,7 +81,7 @@ namespace realsense2_camera
 
 	class PipelineSyncer : public rs2::asynchronous_syncer
 	{
-	public: 
+	public:
 		void operator()(rs2::frame f) const
 		{
 			invoke(std::move(f));
@@ -98,7 +99,7 @@ namespace realsense2_camera
             void Publish(sensor_msgs::Imu msg);     //either send or hold message.
             uint32_t getNumSubscribers() { return _publisher.getNumSubscribers();};
             void Enable(bool is_enabled) {_is_enabled=is_enabled;};
-        
+
         private:
             void PublishPendingMessages();
 
@@ -123,6 +124,34 @@ namespace realsense2_camera
         virtual void publishTopics() override;
         virtual void registerDynamicReconfigCb(ros::NodeHandle& nh) override;
         virtual ~BaseRealSenseNode();
+
+        // Generate a list of the stream types.
+        // Check the stream types which have a non empty diagnostic and updater
+        // pointers and delete them.
+        virtual ~BaseRealSenseNode()
+        {
+          std::vector<stream_index_pair> image_stream_types;
+          for (auto& stream_vec : IMAGE_STREAMS)
+          {
+              for (auto& stream : stream_vec)
+              {
+                  image_stream_types.push_back(stream);
+              }
+          }
+
+          for (auto& stream : image_stream_types)
+          {
+            if (_output_sensor_diagnostic[stream]) {
+              delete _output_sensor_diagnostic[stream];
+              _output_sensor_diagnostic[stream] = nullptr;
+            }
+
+            if (_updater[stream]) {
+              delete _updater[stream];
+              _updater[stream] = nullptr;
+            }
+          }
+        }
 
     public:
         enum imu_sync_method{NONE, COPY, LINEAR_INTERPOLATION};
@@ -191,7 +220,7 @@ namespace realsense2_camera
                         BaseRealSenseNode::float3 m_reading;
                         double                    m_time;
                 };
-                
+
             private:
                 size_t m_max_size;
                 std::map<sensor_name, std::list<imuData> > m_map;
@@ -206,6 +235,8 @@ namespace realsense2_camera
         };
 
         static std::string getNamespaceStr();
+        void getDiagnosticParameters(const std::string& prefix,
+          marble::OutputDiagnosticParams& params);
         void getParameters();
         void setupDevice();
         void setupErrorCallback();
@@ -221,6 +252,7 @@ namespace realsense2_camera
         void publishStaticTransforms();
         void publishDynamicTransforms();
         void publishIntrinsics();
+        void timerTfCallback(const ros::TimerEvent& event);
         void runFirstFrameInitialization(rs2_stream stream_type);
         void publishPointCloud(rs2::points f, const ros::Time& t, const rs2::frameset& frameset);
         Extrinsics rsExtrinsicsToMsg(const rs2_extrinsics& extrinsics, const std::string& frame_id) const;
@@ -274,12 +306,16 @@ namespace realsense2_camera
         std::map<stream_index_pair, int> _width;
         std::map<stream_index_pair, int> _height;
         std::map<stream_index_pair, int> _fps;
+        std::map<stream_index_pair, marble::OutputDiagnosticParams> _output_diagnostic_params;
         std::map<rs2_stream, int>        _format;
         std::map<stream_index_pair, bool> _enable;
         std::map<rs2_stream, std::string> _stream_name;
         bool _publish_tf;
         double _tf_publish_rate;
-        tf2_ros::StaticTransformBroadcaster _static_tf_broadcaster;
+        tf2_ros::TransformBroadcaster _static_tf_broadcaster;
+        // Timer object to publish static transforms every second to avoid the ROS weirdness with
+        // static transforms and topic latching in bag files!
+        ros::Timer _static_tf_timer;
         tf2_ros::TransformBroadcaster _dynamic_tf_broadcaster;
         std::vector<geometry_msgs::TransformStamped> _static_tf_msgs;
         std::shared_ptr<std::thread> _tf_t;
@@ -333,6 +369,9 @@ namespace realsense2_camera
         stream_index_pair _base_stream;
         const std::string _namespace;
 
+        // Map the stream to the diagnostic updater so that there is an updater per stream
+        std::map<stream_index_pair, marble::DiagnosticUpdater*> _updater;
+        std::map<stream_index_pair, marble::OutputDiagnostic*> _output_sensor_diagnostic;
     };//end class
 
 }
