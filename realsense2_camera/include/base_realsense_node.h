@@ -16,6 +16,7 @@
 #include <condition_variable>
 
 #include <mbot_diagnostics/diagnostic_updater.h>
+#include <mbot_diagnostics/generic_diagnostic.h>
 #include <mbot_diagnostics/output_diagnostic.h>
 
 #include <queue>
@@ -25,48 +26,6 @@
 
 namespace realsense2_camera
 {
-    struct FrequencyDiagnostics
-    {
-      FrequencyDiagnostics(double expected_frequency, std::string name, std::string hardware_id) :
-        expected_frequency_(expected_frequency),
-        frequency_status_(diagnostic_updater::FrequencyStatusParam(&expected_frequency_, &expected_frequency_)),
-        diagnostic_updater_(ros::NodeHandle(), ros::NodeHandle("~"), ros::this_node::getName() + "_" + name)
-      {
-        ROS_INFO("Expected frequency for %s = %.5f", name.c_str(), expected_frequency_);
-        diagnostic_updater_.setHardwareID(hardware_id);
-        diagnostic_updater_.add(frequency_status_);
-      }
-
-      void update()
-      {
-        frequency_status_.tick();
-        diagnostic_updater_.update();
-      }
-
-      double expected_frequency_;
-      diagnostic_updater::FrequencyStatus frequency_status_;
-      diagnostic_updater::Updater diagnostic_updater_;
-    };
-    typedef std::pair<image_transport::Publisher, std::shared_ptr<FrequencyDiagnostics>> ImagePublisherWithFrequencyDiagnostics;
-
-    class TemperatureDiagnostics
-    {
-        public:
-            TemperatureDiagnostics(std::string name, std::string serial_no);
-            void diagnostics(diagnostic_updater::DiagnosticStatusWrapper& status);
-
-            void update(double crnt_temperaure)
-            {
-                _crnt_temp = crnt_temperaure;
-                _updater.update();
-            }
-
-        private:
-            double _crnt_temp;
-            diagnostic_updater::Updater _updater;
-
-    };
-
     class NamedFilter
     {
         public:
@@ -262,7 +221,7 @@ namespace realsense2_camera
                           const stream_index_pair& stream,
                           std::map<stream_index_pair, cv::Mat>& images,
                           const std::map<stream_index_pair, ros::Publisher>& info_publishers,
-                          const std::map<stream_index_pair, ImagePublisherWithFrequencyDiagnostics>& image_publishers,
+                          const std::map<stream_index_pair, image_transport::Publisher>& image_publishers,
                           std::map<stream_index_pair, int>& seq,
                           std::map<stream_index_pair, sensor_msgs::CameraInfo>& camera_info,
                           const std::map<stream_index_pair, std::string>& optical_frame_id,
@@ -320,7 +279,7 @@ namespace realsense2_camera
         std::vector<geometry_msgs::TransformStamped> _static_tf_msgs;
         std::shared_ptr<std::thread> _tf_t;
 
-        std::map<stream_index_pair, ImagePublisherWithFrequencyDiagnostics> _image_publishers;
+        std::map<stream_index_pair, image_transport::Publisher> _image_publishers;
         std::map<stream_index_pair, ros::Publisher> _imu_publishers;
         std::shared_ptr<SyncedImuPublisher> _synced_imu_publisher;
         std::map<rs2_stream, int> _image_format;
@@ -354,15 +313,13 @@ namespace realsense2_camera
         std::map<stream_index_pair, sensor_msgs::CameraInfo> _depth_aligned_camera_info;
         std::map<stream_index_pair, int> _depth_aligned_seq;
         std::map<stream_index_pair, ros::Publisher> _depth_aligned_info_publisher;
-        std::map<stream_index_pair, ImagePublisherWithFrequencyDiagnostics> _depth_aligned_image_publishers;
+        std::map<stream_index_pair, image_transport::Publisher> _depth_aligned_image_publishers;
         std::map<stream_index_pair, ros::Publisher> _depth_to_other_extrinsics_publishers;
         std::map<stream_index_pair, rs2_extrinsics> _depth_to_other_extrinsics;
         std::map<std::string, rs2::region_of_interest> _auto_exposure_roi;
         std::map<rs2_stream, bool> _is_first_frame;
         std::map<rs2_stream, std::vector<std::function<void()> > > _video_functions_stack;
 
-        typedef std::pair<rs2_option, std::shared_ptr<TemperatureDiagnostics>> OptionTemperatureDiag;
-        std::vector< OptionTemperatureDiag > _temperature_nodes;
         std::shared_ptr<std::thread> _monitoring_t;
         mutable std::condition_variable _cv;
 
@@ -372,6 +329,9 @@ namespace realsense2_camera
         // Map the stream to the diagnostic updater so that there is an updater per stream
         std::map<stream_index_pair, marble::DiagnosticUpdater*> _updater;
         std::map<stream_index_pair, marble::OutputDiagnostic*> _output_sensor_diagnostic;
+        // Single temperature diagnostic for entire node. Updates sent on base stream's diagnostic
+        // updater created above.
+        std::shared_ptr<marble::GenericDiagnostic> _temperature_sensor_diagnostic;
     };//end class
 
 }

@@ -4,6 +4,7 @@
 #include <algorithm>
 #include <cctype>
 #include <mutex>
+#include <diagnostics/diagnostic_state.h>
 
 using namespace realsense2_camera;
 using namespace ddynamic_reconfigure;
@@ -190,9 +191,9 @@ void BaseRealSenseNode::publishTopics()
     registerDynamicReconfigCb(_node_handle);
     setupErrorCallback();
     enable_devices();
-    setupPublishers();
     setupStreams();
-    SetBaseStream();
+    SetBaseStream(); // Base stream required before setting up publishers below.
+    setupPublishers();
     registerAutoExposureROIOptions(_node_handle);
     publishStaticTransforms();
     publishIntrinsics();
@@ -810,14 +811,27 @@ void BaseRealSenseNode::setupPublishers()
             image_raw << stream_name << "/image_" << ((rectified_image)?"rect_":"") << "raw";
             camera_info << stream_name << "/camera_info";
 
-            std::shared_ptr<FrequencyDiagnostics> frequency_diagnostics(new FrequencyDiagnostics(_fps[stream], stream_name, _serial_no));
-            _image_publishers[stream] = {image_transport.advertise(image_raw.str(), 1), frequency_diagnostics};
+            _image_publishers[stream] = image_transport.advertise(image_raw.str(), 1);
             _info_publisher[stream] = _node_handle.advertise<sensor_msgs::CameraInfo>(camera_info.str(), 1);
 
-            _updater[stream] = new marble::DiagnosticUpdater("/"+_namespace + "/" + image_raw.str(), _node_handle);
+            const std::string diagnostic_name("/" + _namespace + "/" + image_raw.str());
+            _updater[stream] = new marble::DiagnosticUpdater(diagnostic_name, _node_handle);
 
-            _output_sensor_diagnostic[stream] = new marble::OutputDiagnostic("/" + _namespace + "/" + image_raw.str(), _node_handle, _output_diagnostic_params[stream]);
+            _output_sensor_diagnostic[stream] = new marble::OutputDiagnostic(
+                diagnostic_name + "/output", _node_handle, _output_diagnostic_params[stream]
+            );
             _output_sensor_diagnostic[stream]->addToUpdater(_updater[stream]);
+
+            // If this stream is the base stream, then also add a temperature diagnostic to this
+            // stream's updater.
+            if (stream == _base_stream)
+            {
+                _temperature_sensor_diagnostic.reset(
+                    new marble::GenericDiagnostic(diagnostic_name + "/temperature")
+                );
+                _temperature_sensor_diagnostic->addToUpdater(_updater[stream]);
+                _temperature_sensor_diagnostic->setStatus(marble::diagnostics::Status::OK);
+            }
 
             if (_align_depth && (stream != DEPTH) && stream.second < 2)
             {
@@ -826,8 +840,7 @@ void BaseRealSenseNode::setupPublishers()
                 aligned_camera_info << "aligned_depth_to_" << stream_name << "/camera_info";
 
                 std::string aligned_stream_name = "aligned_depth_to_" + stream_name;
-                std::shared_ptr<FrequencyDiagnostics> frequency_diagnostics(new FrequencyDiagnostics(_fps[stream], aligned_stream_name, _serial_no));
-                _depth_aligned_image_publishers[stream] = {image_transport.advertise(aligned_image_raw.str(), 1), frequency_diagnostics};
+                _depth_aligned_image_publishers[stream] = image_transport.advertise(aligned_image_raw.str(), 1);
                 _depth_aligned_info_publisher[stream] = _node_handle.advertise<sensor_msgs::CameraInfo>(aligned_camera_info.str(), 1);
             }
 
@@ -908,7 +921,7 @@ void BaseRealSenseNode::publishAlignedDepthToOthers(rs2::frameset frames, const 
         auto& image_publisher = _depth_aligned_image_publishers.at(sip);
 
         if(0 != info_publisher.getNumSubscribers() ||
-           0 != image_publisher.first.getNumSubscribers())
+           0 != image_publisher.getNumSubscribers())
         {
             std::shared_ptr<rs2::align> align;
             try{
@@ -2230,7 +2243,7 @@ void BaseRealSenseNode::publishFrame(rs2::frame f, const ros::Time& t,
                                      const stream_index_pair& stream,
                                      std::map<stream_index_pair, cv::Mat>& images,
                                      const std::map<stream_index_pair, ros::Publisher>& info_publishers,
-                                     const std::map<stream_index_pair, ImagePublisherWithFrequencyDiagnostics>& image_publishers,
+                                     const std::map<stream_index_pair, image_transport::Publisher>& image_publishers,
                                      std::map<stream_index_pair, int>& seq,
                                      std::map<stream_index_pair, sensor_msgs::CameraInfo>& camera_info,
                                      const std::map<stream_index_pair, std::string>& optical_frame_id,
@@ -2267,7 +2280,7 @@ void BaseRealSenseNode::publishFrame(rs2::frame f, const ros::Time& t,
     auto& info_publisher = info_publishers.at(stream);
     auto& image_publisher = image_publishers.at(stream);
     if(0 != info_publisher.getNumSubscribers() ||
-       0 != image_publisher.first.getNumSubscribers())
+       0 != image_publisher.getNumSubscribers())
     {
         sensor_msgs::ImagePtr img;
         img = cv_bridge::CvImage(std_msgs::Header(), encoding.at(stream.first), image).toImageMsg();
@@ -2288,8 +2301,7 @@ void BaseRealSenseNode::publishFrame(rs2::frame f, const ros::Time& t,
         cam_info.header.seq = seq[stream];
         info_publisher.publish(cam_info);
 
-        image_publisher.first.publish(img);
-        image_publisher.second->update();
+        image_publisher.publish(img);
         // ROS_INFO_STREAM("fid: " << cam_info.header.seq << ", time: " << std::setprecision (20) << t.toSec());
         ROS_DEBUG("%s stream published", rs2_stream_to_string(f.get_profile().stream_type()));
 
@@ -2317,11 +2329,6 @@ bool BaseRealSenseNode::getEnabledProfile(const stream_index_pair& stream_index,
 
 void BaseRealSenseNode::startMonitoring()
 {
-    for (rs2_option option : _monitor_options)
-    {
-        _temperature_nodes.push_back({option, std::make_shared<TemperatureDiagnostics>(rs2_option_to_string(option), _serial_no )});
-    }
-
     int time_interval(10000);
     std::function<void()> func = [this, time_interval](){
         std::mutex mu;
@@ -2337,35 +2344,33 @@ void BaseRealSenseNode::startMonitoring()
     _monitoring_t = std::make_shared<std::thread>(func);
 }
 
+// Publish temperature via Marble diagnostics. Set error status if unable to check for temperature;
+// set OK status and diagnostic metrics on success.
 void BaseRealSenseNode::publish_temperature()
 {
     rs2::options sensor(_sensors[_base_stream]);
-    for (OptionTemperatureDiag option_diag : _temperature_nodes)
+
+    _temperature_sensor_diagnostic->setStatus(marble::diagnostics::Status::OK);
+
+    for (rs2_option option : _monitor_options)
     {
-        rs2_option option(option_diag.first);
         if (sensor.supports(option))
         {
             try
             {
                 auto option_value = sensor.get_option(option);
-                option_diag.second->update(option_value);
+                _temperature_sensor_diagnostic->setMetric(
+                    sensor.get_option_name(option),
+                    option_value
+                );
             }
             catch(const std::exception& e)
             {
                 ROS_DEBUG_STREAM("Failed checking for temperature." << std::endl << e.what());
+                _temperature_sensor_diagnostic->setStatus(
+                    marble::diagnostics::Status::ERROR, "Failed checking for temperature."
+                );
             }
         }
     }
-}
-
-TemperatureDiagnostics::TemperatureDiagnostics(std::string name, std::string serial_no)
-    {
-        _updater.add(name, this, &TemperatureDiagnostics::diagnostics);
-        _updater.setHardwareID(serial_no);
-    }
-
-void TemperatureDiagnostics::diagnostics(diagnostic_updater::DiagnosticStatusWrapper& status)
-{
-        status.summary(0, "OK");
-        status.add("Index", _crnt_temp);
 }

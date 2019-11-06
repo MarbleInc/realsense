@@ -24,6 +24,7 @@
   <depend>message_runtime</depend>
   <depend>tf</depend>
   <depend>ddynamic_reconfigure</depend>
+  <depend>marble_structs</depend>
   <depend>mbot_diagnostics</depend>
   <depend>librealsense2</depend>
   <depend>depth_image_proc</depend>

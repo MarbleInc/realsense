@@ -16,6 +16,7 @@ find_package(catkin REQUIRED COMPONENTS
     image_transport
     tf
     ddynamic_reconfigure
+    marble_structs
     mbot_diagnostics
     )
 
