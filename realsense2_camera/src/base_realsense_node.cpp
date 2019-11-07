@@ -139,6 +139,20 @@ BaseRealSenseNode::~BaseRealSenseNode()
     {
         _monitoring_t->join();
     }
+
+    // Check the stream types which have a non empty diagnostic and updater pointers and delete
+    // them.
+    for (auto& stream : IMAGE_STREAMS)
+    {
+        if (_output_sensor_diagnostic[stream]) {
+            delete _output_sensor_diagnostic[stream];
+            _output_sensor_diagnostic[stream] = nullptr;
+        }
+        if (_updater[stream]) {
+            delete _updater[stream];
+            _updater[stream] = nullptr;
+        }
+    }
 }
 
 void BaseRealSenseNode::toggleSensors(bool enabled)

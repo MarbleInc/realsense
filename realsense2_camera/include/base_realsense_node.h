@@ -84,34 +84,6 @@ namespace realsense2_camera
         virtual void registerDynamicReconfigCb(ros::NodeHandle& nh) override;
         virtual ~BaseRealSenseNode();
 
-        // Generate a list of the stream types.
-        // Check the stream types which have a non empty diagnostic and updater
-        // pointers and delete them.
-        virtual ~BaseRealSenseNode()
-        {
-          std::vector<stream_index_pair> image_stream_types;
-          for (auto& stream_vec : IMAGE_STREAMS)
-          {
-              for (auto& stream : stream_vec)
-              {
-                  image_stream_types.push_back(stream);
-              }
-          }
-
-          for (auto& stream : image_stream_types)
-          {
-            if (_output_sensor_diagnostic[stream]) {
-              delete _output_sensor_diagnostic[stream];
-              _output_sensor_diagnostic[stream] = nullptr;
-            }
-
-            if (_updater[stream]) {
-              delete _updater[stream];
-              _updater[stream] = nullptr;
-            }
-          }
-        }
-
     public:
         enum imu_sync_method{NONE, COPY, LINEAR_INTERPOLATION};
 
