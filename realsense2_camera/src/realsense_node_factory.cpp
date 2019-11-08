@@ -4,6 +4,7 @@
 #include "../include/realsense_node_factory.h"
 #include "../include/base_realsense_node.h"
 #include "../include/t265_realsense_node.h"
+#include <chrono>
 #include <iostream>
 #include <map>
 #include <mutex>
@@ -164,9 +165,21 @@ void RealSenseNodeFactory::getDevice(rs2::device_list list)
 		_initial_reset = false;
 		try
 		{
-			// TODO: Add sleep back in?
-			ROS_INFO("Resetting device...");
+			// Hardware reset and sleep for 10 seconds to make sure that the reset takes place
+			// successfully. Using mutex and condition variables is not currently possible because of no
+			// support of device specific callbacks.
+			// Documented in PR: https://github.com/intel-ros/realsense/pull/455
+			std::string serial_no_str("");
+			if (!_serial_no.empty())
+			{
+				serial_no_str += std::string(" (serial no:") +
+					_device.get_info(RS2_CAMERA_INFO_SERIAL_NUMBER) + ")";
+			}
+			ROS_INFO_STREAM("Resetting device" << serial_no_str << "...");
 			_device.hardware_reset();
+			ROS_INFO_STREAM("Sleeping camera" << serial_no_str << "...");
+			std::this_thread::sleep_for(std::chrono::seconds(10));
+			ROS_INFO_STREAM("Woke camera" << serial_no_str);
 			_device = rs2::device();
 
 		}
