@@ -48,29 +48,12 @@ namespace realsense2_camera
     const int IMAGE_HEIGHT    = 480;
     const int IMAGE_FPS       = 30;
 
-    const int INFRA2_WIDTH    = 640;
-    const int INFRA2_HEIGHT   = 480;
-
-    const int COLOR_WIDTH     = 640;
-    const int COLOR_HEIGHT    = 480;
-
-    const int FISHEYE_WIDTH   = 640;
-    const int FISHEYE_HEIGHT  = 480;
-
-    const int DEPTH_FPS       = 30;
-    const int INFRA1_FPS      = 30;
-    const int INFRA2_FPS      = 30;
-    const int COLOR_FPS       = 30;
-    const int FISHEYE_FPS     = 30;
-    const int GYRO_FPS        = 1000;
-    const int ACCEL_FPS       = 1000;
     const int IMU_FPS         = 0;
 
     const float DIAGNOSTIC_MIN_FREQUENCY          = 0.0;
     const float DIAGNOSTIC_MAX_FREQUENCY          = 2000.0;
     const float DIAGNOSTIC_MAX_INTERVAL_SEC       = 1.0;
     const double DIAGNOSTIC_TIME_WINDOW_SEC        = 5.0;
-
 
     const bool ENABLE_DEPTH   = true;
     const bool ENABLE_INFRA1  = true;
