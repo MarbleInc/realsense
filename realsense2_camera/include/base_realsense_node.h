@@ -183,7 +183,6 @@ namespace realsense2_camera
         void publishStaticTransforms();
         void publishDynamicTransforms();
         void publishIntrinsics();
-        void timerTfCallback(const ros::TimerEvent& event);
         void runFirstFrameInitialization(rs2_stream stream_type);
         void publishPointCloud(rs2::points f, const ros::Time& t, const rs2::frameset& frameset);
         Extrinsics rsExtrinsicsToMsg(const rs2_extrinsics& extrinsics, const std::string& frame_id) const;
@@ -243,10 +242,7 @@ namespace realsense2_camera
         std::map<rs2_stream, std::string> _stream_name;
         bool _publish_tf;
         double _tf_publish_rate;
-        tf2_ros::TransformBroadcaster _static_tf_broadcaster;
-        // Timer object to publish static transforms every second to avoid the ROS weirdness with
-        // static transforms and topic latching in bag files!
-        ros::Timer _static_tf_timer;
+        tf2_ros::StaticTransformBroadcaster _static_tf_broadcaster;
         tf2_ros::TransformBroadcaster _dynamic_tf_broadcaster;
         std::vector<geometry_msgs::TransformStamped> _static_tf_msgs;
         std::shared_ptr<std::thread> _tf_t;

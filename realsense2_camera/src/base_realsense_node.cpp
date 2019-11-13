@@ -213,9 +213,6 @@ void BaseRealSenseNode::publishTopics()
     publishIntrinsics();
     startMonitoring();
     ROS_INFO_STREAM("RealSense Node Is Up!");
-    // Create a timer at 100Hz to publish all the Realsense transforms periodically.
-    _static_tf_timer = _node_handle.createTimer(ros::Duration(1.0/30.0),
-    &BaseRealSenseNode::timerTfCallback, this);
 }
 
 void BaseRealSenseNode::runFirstFrameInitialization(rs2_stream stream_type)
@@ -2321,10 +2318,6 @@ void BaseRealSenseNode::publishFrame(rs2::frame f, const ros::Time& t,
 
         _output_sensor_diagnostic[stream]->tick();
     }
-}
-
-void BaseRealSenseNode::timerTfCallback(const ros::TimerEvent& event) {
-    publishStaticTransforms();
 }
 
 bool BaseRealSenseNode::getEnabledProfile(const stream_index_pair& stream_index, rs2::stream_profile& profile)
