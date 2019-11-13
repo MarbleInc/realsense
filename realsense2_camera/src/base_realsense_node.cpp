@@ -1955,15 +1955,11 @@ void BaseRealSenseNode::publishStaticTransforms()
     rs2::stream_profile base_profile = getAProfile(_base_stream);
 
     // Publish static transforms
-    // The depth frame is used as the base link.
-    // Hence no additional transformation is done from base link to depth frame.
-    // The depth transform(s) below (base -> depth, depth -> optical depth) are handled with the
-    // Marble static tf broadcaster, therefore disabled here!
     if (_publish_tf)
     {
         for (std::pair<stream_index_pair, bool> ienable : _enable)
         {
-            if (ienable.second && ienable.first != DEPTH)
+            if (ienable.second)
             {
                 calcAndPublishStaticTransform(ienable.first, base_profile);
             }
