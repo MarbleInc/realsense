@@ -825,7 +825,7 @@ void BaseRealSenseNode::setupPublishers()
                 "setupPublishers: stream_name: %s. Image_raw: %s, camera_info: %s",
                 stream_name.c_str(),
                 image_raw.str().c_str(),
-                camera_info.str().c_str(),
+                camera_info.str().c_str()
             );
 
             ROS_INFO("setupPublishers: setting image_publisher for stream");
