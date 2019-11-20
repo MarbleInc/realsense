@@ -821,6 +821,7 @@ void BaseRealSenseNode::setupPublishers()
             std::string stream_name(STREAM_NAME(stream));
             image_raw << stream_name << "/image_" << ((rectified_image)?"rect_":"") << "raw";
             camera_info << stream_name << "/camera_info";
+            ROS_INFO("setupPublishers: stream_name: %s", stream_name.c_str());
 
             _image_publishers[stream] = image_transport.advertise(image_raw.str(), 1);
             _info_publisher[stream] = _node_handle.advertise<sensor_msgs::CameraInfo>(camera_info.str(), 1);
@@ -861,6 +862,7 @@ void BaseRealSenseNode::setupPublishers()
             }
         }
     }
+    ROS_INFO("setupPublishers: done with streams");
 
     _synced_imu_publisher = std::make_shared<SyncedImuPublisher>();
     if (_imu_sync_method > imu_sync_method::NONE && _enable[GYRO] && _enable[ACCEL])
@@ -910,6 +912,8 @@ void BaseRealSenseNode::setupPublishers()
     {
         _depth_to_other_extrinsics_publishers[INFRA2] = _node_handle.advertise<Extrinsics>("extrinsics/depth_to_infra2", 1, true);
     }
+
+    ROS_INFO("setupPublishers: complete");
 }
 
 void BaseRealSenseNode::publishAlignedDepthToOthers(rs2::frameset frames, const ros::Time& t)
@@ -1952,9 +1956,11 @@ void BaseRealSenseNode::SetBaseStream()
 
 void BaseRealSenseNode::publishStaticTransforms()
 {
+    ROS_INFO("publishStaticTransforms: start");
     rs2::stream_profile base_profile = getAProfile(_base_stream);
 
     // Publish static transforms
+    ROS_INFO("publishStaticTransforms: publish static");
     if (_publish_tf)
     {
         for (std::pair<stream_index_pair, bool> ienable : _enable)
@@ -1972,6 +1978,7 @@ void BaseRealSenseNode::publishStaticTransforms()
     }
 
     // Publish Extrinsics Topics:
+    ROS_INFO("publishStaticTransforms: publish extrinsics");
     if (_enable[DEPTH] &&
         _enable[FISHEYE])
     {
@@ -2009,6 +2016,7 @@ void BaseRealSenseNode::publishStaticTransforms()
         _depth_to_other_extrinsics_publishers[INFRA2].publish(rsExtrinsicsToMsg(ex, frame_id));
     }
 
+    ROS_INFO("publishStaticTransforms: complete");
 }
 
 void BaseRealSenseNode::publishDynamicTransforms()
@@ -2033,6 +2041,7 @@ void BaseRealSenseNode::publishDynamicTransforms()
 
 void BaseRealSenseNode::publishIntrinsics()
 {
+    ROS_INFO("publishInstrinsics: start");
     if (_enable[GYRO])
     {
         _info_publisher[GYRO] = _node_handle.advertise<IMUInfo>("gyro/imu_info", 1, true);
@@ -2046,6 +2055,8 @@ void BaseRealSenseNode::publishIntrinsics()
         IMUInfo info_msg = getImuInfo(ACCEL);
         _info_publisher[ACCEL].publish(info_msg);
     }
+
+    ROS_INFO("publishInstrinsics: complete");
 }
 
 void reverse_memcpy(unsigned char* dst, const unsigned char* src, size_t n)
