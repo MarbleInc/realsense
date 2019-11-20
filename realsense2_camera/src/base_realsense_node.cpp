@@ -821,11 +821,19 @@ void BaseRealSenseNode::setupPublishers()
             std::string stream_name(STREAM_NAME(stream));
             image_raw << stream_name << "/image_" << ((rectified_image)?"rect_":"") << "raw";
             camera_info << stream_name << "/camera_info";
-            ROS_INFO("setupPublishers: stream_name: %s", stream_name.c_str());
+            ROS_INFO(
+                "setupPublishers: stream_name: %s. Image_raw: %s, camera_info: %s",
+                stream_name.c_str(),
+                image_raw.str().c_str(),
+                camera_info.str().c_str(),
+            );
 
+            ROS_INFO("setupPublishers: setting image_publisher for stream");
             _image_publishers[stream] = image_transport.advertise(image_raw.str(), 1);
+            ROS_INFO("setupPublishers: setting info_publisher for stream");
             _info_publisher[stream] = _node_handle.advertise<sensor_msgs::CameraInfo>(camera_info.str(), 1);
 
+            ROS_INFO("setupPublishers: preparing to set up diagnostics");
             const std::string diagnostic_name("/" + _namespace + "/" + image_raw.str());
             ROS_INFO("setupPublishers: diagnostic_name: %s", diagnostic_name.c_str());
             _updater[stream] = new marble::DiagnosticUpdater(diagnostic_name, _node_handle);
