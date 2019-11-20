@@ -827,8 +827,10 @@ void BaseRealSenseNode::setupPublishers()
             _info_publisher[stream] = _node_handle.advertise<sensor_msgs::CameraInfo>(camera_info.str(), 1);
 
             const std::string diagnostic_name("/" + _namespace + "/" + image_raw.str());
+            ROS_INFO("setupPublishers: diagnostic_name: %s", diagnostic_name.c_str());
             _updater[stream] = new marble::DiagnosticUpdater(diagnostic_name, _node_handle);
 
+            ROS_INFO("setupPublishers: setting up output diagnostic");
             _output_sensor_diagnostic[stream] = new marble::OutputDiagnostic(
                 diagnostic_name + "/output", _node_handle, _output_diagnostic_params[stream]
             );
@@ -838,6 +840,7 @@ void BaseRealSenseNode::setupPublishers()
             // stream's updater.
             if (stream == _base_stream)
             {
+                ROS_INFO("setupPublishers: setting up temperature diag since base stream");
                 _temperature_sensor_diagnostic.reset(
                     new marble::GenericDiagnostic(diagnostic_name + "/temperature")
                 );
@@ -847,6 +850,7 @@ void BaseRealSenseNode::setupPublishers()
 
             if (_align_depth && (stream != DEPTH) && stream.second < 2)
             {
+                ROS_INFO("setupPublishers: setting up aligned publishers");
                 std::stringstream aligned_image_raw, aligned_camera_info;
                 aligned_image_raw << "aligned_depth_to_" << stream_name << "/image_raw";
                 aligned_camera_info << "aligned_depth_to_" << stream_name << "/camera_info";
@@ -858,6 +862,7 @@ void BaseRealSenseNode::setupPublishers()
 
             if (stream == DEPTH && _pointcloud)
             {
+                ROS_INFO("setupPublishers: setting up point cloud publisher");
                 _pointcloud_publisher = _node_handle.advertise<sensor_msgs::PointCloud2>("depth/color/points", 1);
             }
         }
