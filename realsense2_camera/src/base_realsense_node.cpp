@@ -1331,7 +1331,7 @@ void BaseRealSenseNode::imu_callback_sync(rs2::frame frame, imu_sync_method sync
         seq += 1;
         double elapsed_camera_ms = (/*ms*/ frame_time - /*ms*/ _camera_time_base) / 1000.0;
 
-        if (0 != _synced_imu_publisher->getNumSubscribers())
+        if (_synced_imu_publisher && 0 != _synced_imu_publisher->getNumSubscribers())
         {
             auto crnt_reading = *(reinterpret_cast<const float3*>(frame.get_data()));
             if (GYRO == stream_index)
@@ -1530,7 +1530,10 @@ void BaseRealSenseNode::pose_callback(rs2::frame frame)
 
 void BaseRealSenseNode::frame_callback(rs2::frame frame)
 {
-    _synced_imu_publisher->Pause();
+    if (_synced_imu_publisher)
+    {
+        _synced_imu_publisher->Pause();
+    }
 
     try{
         double frame_time = frame.get_timestamp();
@@ -1706,7 +1709,10 @@ void BaseRealSenseNode::frame_callback(rs2::frame frame)
     {
         ROS_ERROR_STREAM("An error has occurred during frame callback: " << ex.what());
     }
-    _synced_imu_publisher->Resume();
+    if (_synced_imu_publisher)
+    {
+        _synced_imu_publisher->Resume();
+    }
 }; // frame_callback
 
 void BaseRealSenseNode::multiple_message_callback(rs2::frame frame, imu_sync_method sync_method)
