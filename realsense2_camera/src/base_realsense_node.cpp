@@ -2384,6 +2384,16 @@ void BaseRealSenseNode::startMonitoring()
 // set OK status and diagnostic metrics on success.
 void BaseRealSenseNode::publish_temperature()
 {
+    // A temperature diagnostic may not be set up on devices whose base stream is not an image
+    // stream. If no temperature diagnostic, then skip publishing.
+    // TODO: Determine how to have base stream just be a generic stream, not just image stream...
+    //       Or add to comments above. See SetBaseStream and setupPublishers (the latter only looks
+    //       through image streams, probably should change that...).
+    if (!_temperature_sensor_diagnostic)
+    {
+        return;
+    }
+
     rs2::options sensor(_sensors[_base_stream]);
 
     _temperature_sensor_diagnostic->setStatus(marble::diagnostics::Status::OK);
