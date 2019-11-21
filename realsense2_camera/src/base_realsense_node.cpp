@@ -833,17 +833,6 @@ void BaseRealSenseNode::setupPublishers()
             );
             _output_sensor_diagnostic[stream]->addToUpdater(_updater[stream]);
 
-            // If this stream is the base stream, then also add a temperature diagnostic to this
-            // stream's updater.
-            if (stream == _base_stream)
-            {
-                _temperature_sensor_diagnostic.reset(
-                    new marble::GenericDiagnostic(diagnostic_name + "/temperature")
-                );
-                _temperature_sensor_diagnostic->addToUpdater(_updater[stream]);
-                _temperature_sensor_diagnostic->setStatus(marble::diagnostics::Status::OK);
-            }
-
             if (_align_depth && (stream != DEPTH) && stream.second < 2)
             {
                 std::stringstream aligned_image_raw, aligned_camera_info;
@@ -861,6 +850,14 @@ void BaseRealSenseNode::setupPublishers()
             }
         }
     }
+
+    // Add temperature diagnostic to base stream's updater. Note that we can't do this in the loop
+    // above because some devices (ex: t265) do not have an image stream as their base stream.
+    _temperature_sensor_diagnostic.reset(
+        new marble::GenericDiagnostic("/" + _namespace + "/temperature")
+    );
+    _temperature_sensor_diagnostic->addToUpdater(_updater[_base_stream]);
+    _temperature_sensor_diagnostic->setStatus(marble::diagnostics::Status::OK);
 
     _synced_imu_publisher = std::make_shared<SyncedImuPublisher>();
     if (_imu_sync_method > imu_sync_method::NONE && _enable[GYRO] && _enable[ACCEL])
