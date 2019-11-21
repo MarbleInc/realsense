@@ -1348,7 +1348,9 @@ void BaseRealSenseNode::imu_callback_sync(rs2::frame frame, imu_sync_method sync
         seq += 1;
         double elapsed_camera_ms = (/*ms*/ frame_time - /*ms*/ _camera_time_base) / 1000.0;
 
-        if (0 != _synced_imu_publisher->getNumSubscribers())
+        // TODO: This is the call that is failing. _synced_imu_publisher not yet set up, since this
+        //       starts getting called while early setupPublishers still going...
+        if (_synced_imu_publisher && 0 != _synced_imu_publisher->getNumSubscribers())
         {
             auto crnt_reading = *(reinterpret_cast<const float3*>(frame.get_data()));
             if (GYRO == stream_index)
