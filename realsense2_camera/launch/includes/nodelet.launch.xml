@@ -1,13 +1,15 @@
 <launch>
   <arg name="external_manager"    default="false"/>
   <arg name="manager"             default="realsense2_camera_manager"/>
-  <arg name="serial_no"           default=""/>
+  <!-- Serial no injected in directly from env, so comment out here. -->
+  <!-- <arg name="serial_no"           default=""/> -->
   <arg name="usb_port_id"         default=""/>
   <arg name="device_type"         default=""/>
   <arg name="tf_prefix"           default=""/>
   <arg name="json_file_path"      default=""/>
   <arg name="rosbag_filename"     default=""/>
   <arg name="required"            default="false"/>
+  <arg name="machine"             default="com-1"/>
 
   <arg name="fisheye_width"       default="0"/>
   <arg name="fisheye_height"      default="0"/>
@@ -45,41 +47,45 @@
   <arg name="align_depth"         default="false"/>
 
   <arg name="base_frame_id"             default="$(arg tf_prefix)_link"/>
-  <arg name="depth_frame_id"            default="$(arg tf_prefix)_depth_frame"/>
-  <arg name="infra1_frame_id"           default="$(arg tf_prefix)_infra1_frame"/>
-  <arg name="infra2_frame_id"           default="$(arg tf_prefix)_infra2_frame"/>
-  <arg name="color_frame_id"            default="$(arg tf_prefix)_color_frame"/>
-  <arg name="fisheye_frame_id"          default="$(arg tf_prefix)_fisheye_frame"/>
-  <arg name="fisheye1_frame_id"         default="$(arg tf_prefix)_fisheye1_frame"/>
-  <arg name="fisheye2_frame_id"         default="$(arg tf_prefix)_fisheye2_frame"/>
-  <arg name="accel_frame_id"            default="$(arg tf_prefix)_accel_frame"/>
-  <arg name="gyro_frame_id"             default="$(arg tf_prefix)_gyro_frame"/>
-  <arg name="pose_frame_id"             default="$(arg tf_prefix)_pose_frame"/>
+  <!--
+    Marble frame ids are named using base_frame_id (i.e., including "_link" suffix), not just
+    tf_prefix (as is the case upstream).
+  -->
+  <arg name="depth_frame_id"            default="$(arg base_frame_id)_depth_frame"/>
+  <arg name="infra1_frame_id"           default="$(arg base_frame_id)_infra1_frame"/>
+  <arg name="infra2_frame_id"           default="$(arg base_frame_id)_infra2_frame"/>
+  <arg name="color_frame_id"            default="$(arg base_frame_id)_color_frame"/>
+  <arg name="fisheye_frame_id"          default="$(arg base_frame_id)_fisheye_frame"/>
+  <arg name="fisheye1_frame_id"         default="$(arg base_frame_id)_fisheye1_frame"/>
+  <arg name="fisheye2_frame_id"         default="$(arg base_frame_id)_fisheye2_frame"/>
+  <arg name="accel_frame_id"            default="$(arg base_frame_id)_accel_frame"/>
+  <arg name="gyro_frame_id"             default="$(arg base_frame_id)_gyro_frame"/>
+  <arg name="pose_frame_id"             default="$(arg base_frame_id)_pose_frame"/>
 
-  <arg name="depth_optical_frame_id"    default="$(arg tf_prefix)_depth_optical_frame"/>
-  <arg name="infra1_optical_frame_id"   default="$(arg tf_prefix)_infra1_optical_frame"/>
-  <arg name="infra2_optical_frame_id"   default="$(arg tf_prefix)_infra2_optical_frame"/>
-  <arg name="color_optical_frame_id"    default="$(arg tf_prefix)_color_optical_frame"/>
-  <arg name="fisheye_optical_frame_id"  default="$(arg tf_prefix)_fisheye_optical_frame"/>
-  <arg name="fisheye1_optical_frame_id" default="$(arg tf_prefix)_fisheye1_optical_frame"/>
-  <arg name="fisheye2_optical_frame_id" default="$(arg tf_prefix)_fisheye2_optical_frame"/>
-  <arg name="accel_optical_frame_id"    default="$(arg tf_prefix)_accel_optical_frame"/>
-  <arg name="gyro_optical_frame_id"     default="$(arg tf_prefix)_gyro_optical_frame"/>
-  <arg name="imu_optical_frame_id"      default="$(arg tf_prefix)_imu_optical_frame"/>
-  <arg name="pose_optical_frame_id"     default="$(arg tf_prefix)_pose_optical_frame"/>
+  <arg name="depth_optical_frame_id"    default="$(arg base_frame_id)_depth_optical_frame"/>
+  <arg name="infra1_optical_frame_id"   default="$(arg base_frame_id)_infra1_optical_frame"/>
+  <arg name="infra2_optical_frame_id"   default="$(arg base_frame_id)_infra2_optical_frame"/>
+  <arg name="color_optical_frame_id"    default="$(arg base_frame_id)_color_optical_frame"/>
+  <arg name="fisheye_optical_frame_id"  default="$(arg base_frame_id)_fisheye_optical_frame"/>
+  <arg name="fisheye1_optical_frame_id" default="$(arg base_frame_id)_fisheye1_optical_frame"/>
+  <arg name="fisheye2_optical_frame_id" default="$(arg base_frame_id)_fisheye2_optical_frame"/>
+  <arg name="accel_optical_frame_id"    default="$(arg base_frame_id)_accel_optical_frame"/>
+  <arg name="gyro_optical_frame_id"     default="$(arg base_frame_id)_gyro_optical_frame"/>
+  <arg name="imu_optical_frame_id"      default="$(arg base_frame_id)_imu_optical_frame"/>
+  <arg name="pose_optical_frame_id"     default="$(arg base_frame_id)_pose_optical_frame"/>
 
-  <arg name="aligned_depth_to_color_frame_id"    default="$(arg tf_prefix)_aligned_depth_to_color_frame"/>
-  <arg name="aligned_depth_to_infra1_frame_id"   default="$(arg tf_prefix)_aligned_depth_to_infra1_frame"/>
-  <arg name="aligned_depth_to_infra2_frame_id"   default="$(arg tf_prefix)_aligned_depth_to_infra2_frame"/>
-  <arg name="aligned_depth_to_fisheye_frame_id"  default="$(arg tf_prefix)_aligned_depth_to_fisheye_frame"/>
-  <arg name="aligned_depth_to_fisheye1_frame_id" default="$(arg tf_prefix)_aligned_depth_to_fisheye1_frame"/>
-  <arg name="aligned_depth_to_fisheye2_frame_id" default="$(arg tf_prefix)_aligned_depth_to_fisheye2_frame"/>
+  <arg name="aligned_depth_to_color_frame_id"    default="$(arg base_frame_id)_aligned_depth_to_color_frame"/>
+  <arg name="aligned_depth_to_infra1_frame_id"   default="$(arg base_frame_id)_aligned_depth_to_infra1_frame"/>
+  <arg name="aligned_depth_to_infra2_frame_id"   default="$(arg base_frame_id)_aligned_depth_to_infra2_frame"/>
+  <arg name="aligned_depth_to_fisheye_frame_id"  default="$(arg base_frame_id)_aligned_depth_to_fisheye_frame"/>
+  <arg name="aligned_depth_to_fisheye1_frame_id" default="$(arg base_frame_id)_aligned_depth_to_fisheye1_frame"/>
+  <arg name="aligned_depth_to_fisheye2_frame_id" default="$(arg base_frame_id)_aligned_depth_to_fisheye2_frame"/>
 
   <arg name="publish_tf"               default="true"/>
   <arg name="tf_publish_rate"          default="0"/> <!-- 0 - static transform -->
 
-  <arg name="odom_frame_id"            default="$(arg tf_prefix)_odom_frame"/>
-  <arg name="topic_odom_in"            default="$(arg tf_prefix)/odom_in"/>
+  <arg name="odom_frame_id"            default="$(arg base_frame_id)_odom_frame"/>
+  <arg name="topic_odom_in"            default="$(arg base_frame_id)/odom_in"/>
   <arg name="calib_odom_file"          default=""/>
   <arg name="publish_odom_tf"          default="true"/>
   <arg name="filters"                  default=""/>
@@ -89,10 +95,9 @@
   <arg name="unite_imu_method"         default="none"/> <!-- Options are: [none, copy, linear_interpolation] -->
   <arg name="allow_no_texture_points"  default="false"/>
 
-
-  <node unless="$(arg external_manager)" pkg="nodelet" type="nodelet" name="$(arg manager)" args="manager" output="screen" required="$(arg required)"/>
-  <node pkg="nodelet" type="nodelet" name="realsense2_camera" args="load realsense2_camera/RealSenseNodeFactory $(arg manager)" required="$(arg required)">
-    <param name="serial_no"                type="str"  value="$(arg serial_no)"/>
+  <node unless="$(arg external_manager)" pkg="nodelet" type="nodelet" name="$(arg manager)" args="manager" output="screen" required="$(arg required)" machine="$(arg machine)"/>
+  <node pkg="nodelet" type="nodelet" name="realsense2_camera" args="load realsense2_camera/RealSenseNodeFactory $(arg manager)" required="$(arg required)" machine="$(arg machine)">
+    <!-- <param name="serial_no"                type="str"  value="$(arg serial_no)"/> -->
     <param name="usb_port_id"              type="str"  value="$(arg usb_port_id)"/>
     <param name="device_type"              type="str"  value="$(arg device_type)"/>
     <param name="json_file_path"           type="str"  value="$(arg json_file_path)"/>
@@ -177,5 +182,42 @@
     <param name="unite_imu_method"         type="str"    value="$(arg unite_imu_method)"/>
     <param name="allow_no_texture_points"  type="bool"   value="$(arg allow_no_texture_points)"/>
 
+    <rosparam command="load">
+      fisheye_dependency:
+        freq_warning_thresholds:
+          min_frequency: 14
+          max_frequency: 16
+          max_interval_sec: 0.2
+      depth_dependency:
+        freq_warning_thresholds:
+          min_frequency: 14
+          max_frequency: 16
+          max_interval_sec: 0.2
+      infra1_dependency:
+        freq_warning_thresholds:
+          min_frequency: 14
+          max_frequency: 16
+          max_interval_sec: 0.2
+      infra2_dependency:
+        freq_warning_thresholds:
+          min_frequency: 14
+          max_frequency: 16
+          max_interval_sec: 0.2
+      color_dependency:
+        freq_warning_thresholds:
+          min_frequency: 14
+          max_frequency: 16
+          max_interval_sec: 0.2
+      gyro_dependency:
+        freq_warning_thresholds:
+          min_frequency: 0
+          max_frequency: 2000
+          max_interval_sec: 0.01
+      accel_dependency:
+        freq_warning_thresholds:
+          min_frequency: 0
+          max_frequency: 2000
+          max_interval_sec: 0.01
+    </rosparam>
   </node>
 </launch>
