@@ -1,6 +1,7 @@
 <launch>
 
   <arg name="tf_prefix"/>
+  <arg name="odom_frame_id"/>
   <arg name="machine"               default="com-1"/>
 
   <include
