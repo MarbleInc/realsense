@@ -1,0 +1,65 @@
+<launch>
+
+  <arg name="tf_prefix"/>
+  <arg name="machine"               default="com-1"/>
+  <arg name="manager"               default="realsense2_camera_manager"/>
+  <arg name="enable_color"          default="false"/>
+
+  <include
+    file="$(find realsense2_camera)/launch/includes/nodelet.launch.xml"
+    pass_all_args="true"
+  >
+    <arg name="device_type"         value="d4.5"/>
+
+    <arg name="fisheye_width"       value="1280"/>
+    <arg name="fisheye_height"      value="720"/>
+
+    <arg name="depth_width"         value="1280"/>
+    <arg name="depth_height"        value="720"/>
+
+    <arg name="infra_width"         value="1280"/>
+    <arg name="infra_height"        value="720"/>
+    <arg name="enable_infra1"       value="false"/>
+    <arg name="enable_infra2"       value="false"/>
+
+    <arg name="color_width"         value="1280"/>
+    <arg name="color_height"        value="720"/>
+
+    <arg name="fisheye_fps"         value="15"/>
+    <arg name="depth_fps"           value="15"/>
+    <arg name="infra_fps"           value="15"/>
+    <arg name="color_fps"           value="15"/>
+    <arg name="gyro_fps"            value="1000"/>
+    <arg name="accel_fps"           value="1000"/>
+
+    <arg name="initial_reset"       value="true"/>
+  </include>
+
+  <rosparam param="/$(arg tf_prefix)/depth_dec/image_rect_raw/disable_pub_plugins">
+    - 'image_transport/compressedDepth'
+    - 'image_transport/compressed'
+    - 'image_transport/theora'
+  </rosparam>
+
+  <rosparam param="/$(arg tf_prefix)/depth/image_rect_raw/disable_pub_plugins">
+    - 'image_transport/compressedDepth'
+    - 'image_transport/compressed'
+    - 'image_transport/theora'
+  </rosparam>
+
+  <rosparam param="/$(arg tf_prefix)/color/image_raw/disable_pub_plugins">
+    - 'image_transport/compressedDepth'
+    - 'image_transport/theora'
+  </rosparam>
+
+  <node pkg="nodelet" type="nodelet" name="rs_decimation"
+        args="load image_proc/crop_decimate $(arg manager) --no-bond" machine="$(arg machine)">
+    <remap from="camera/image_raw"       to="/$(arg tf_prefix)/depth/image_rect_raw"/>
+    <remap from="camera/camera_info"     to="/$(arg tf_prefix)/depth/camera_info"/>
+    <remap from="camera_out/image_raw"   to="/$(arg tf_prefix)/depth_dec/image_rect_raw"/>
+    <remap from="camera_out/camera_info" to="/$(arg tf_prefix)/depth_dec/camera_info"/>
+    <param name="decimation_x"           type="int"  value="4"/>
+    <param name="decimation_y"           type="int"  value="4"/>
+  </node>
+
+</launch>

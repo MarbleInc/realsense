@@ -1,0 +1,28 @@
+<launch>
+
+  <arg name="tf_prefix"/>
+  <arg name="odom_frame_id"/>
+  <arg name="machine"               default="com-1"/>
+
+  <include
+    file="$(find realsense2_camera)/launch/includes/nodelet.launch.xml"
+    pass_all_args="true"
+  >
+    <arg name="device_type"         value="t265"/>
+
+    <arg name="fisheye_width"       value="848"/>
+    <arg name="fisheye_height"      value="800"/>
+    <arg name="enable_fisheye1"     value="true"/>
+    <arg name="enable_fisheye2"     value="true"/>
+
+    <arg name="fisheye_fps"              value="30"/>
+    <arg name="gyro_fps"                 value="200"/>
+    <arg name="accel_fps"                value="62"/>
+    <arg name="enable_gyro"              value="true"/>
+    <arg name="enable_accel"             value="true"/>
+
+    <arg name="linear_accel_cov"         value="0.01"/>
+    <arg name="initial_reset"            value="true"/>
+    <arg name="unite_imu_method"         value="linear_interpolation"/>
+  </include>
+</launch>
