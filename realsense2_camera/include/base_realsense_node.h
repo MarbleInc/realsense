@@ -15,9 +15,9 @@
 #include <tf2_ros/static_transform_broadcaster.h>
 #include <condition_variable>
 
-#include <mbot_diagnostics/diagnostic_updater.h>
-#include <mbot_diagnostics/generic_diagnostic.h>
-#include <mbot_diagnostics/output_diagnostic.h>
+#include <diagnostics_ros/diagnostic_updater.h>
+#include <diagnostics_ros/generic_diagnostic.h>
+#include <diagnostics_ros/output_diagnostic.h>
 
 #include <queue>
 #include <mutex>
