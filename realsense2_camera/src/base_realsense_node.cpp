@@ -825,8 +825,17 @@ void BaseRealSenseNode::setupPublishers()
             _image_publishers[stream] = image_transport.advertise(image_raw.str(), 1);
             _info_publisher[stream] = _node_handle.advertise<sensor_msgs::CameraInfo>(camera_info.str(), 1);
 
+            // Setup diagnostics
             const std::string diagnostic_name("/" + _namespace + "/" + image_raw.str());
-            _updater[stream] = new marble::DiagnosticUpdater(diagnostic_name, _node_handle);
+
+            std::string display_name = "";
+            if (_namespace.find("right") != std::string::npos) display_name = "Right RS Image";
+            else if (_namespace.find("left") != std::string::npos) display_name = "Left RS Image";
+
+            if (display_name != "")
+                _updater[stream] = new marble::DiagnosticUpdater(diagnostic_name, display_name, _node_handle);
+            else
+                _updater[stream] = new marble::DiagnosticUpdater(diagnostic_name, _node_handle);
 
             _output_sensor_diagnostic[stream] = new marble::OutputDiagnostic(
                 diagnostic_name + "/output", _node_handle, _output_diagnostic_params[stream]
