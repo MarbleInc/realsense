@@ -573,6 +573,7 @@ void BaseRealSenseNode::getParameters()
         _sync_frames = true;
 
     _pnh.param("json_file_path", _json_file_path, std::string(""));
+    _pnh.param("diagnostic_display_name", _display_name, std::string(""));
 
     for (auto& stream : IMAGE_STREAMS)
     {
@@ -825,8 +826,13 @@ void BaseRealSenseNode::setupPublishers()
             _image_publishers[stream] = image_transport.advertise(image_raw.str(), 1);
             _info_publisher[stream] = _node_handle.advertise<sensor_msgs::CameraInfo>(camera_info.str(), 1);
 
+            // Setup diagnostics
             const std::string diagnostic_name("/" + _namespace + "/" + image_raw.str());
-            _updater[stream] = new marble::DiagnosticUpdater(diagnostic_name, _node_handle);
+
+            if (_display_name != "")
+                _updater[stream] = new marble::DiagnosticUpdater(diagnostic_name, _display_name, _node_handle);
+            else
+                _updater[stream] = new marble::DiagnosticUpdater(diagnostic_name, _node_handle);
 
             _output_sensor_diagnostic[stream] = new marble::OutputDiagnostic(
                 diagnostic_name + "/output", _node_handle, _output_diagnostic_params[stream]

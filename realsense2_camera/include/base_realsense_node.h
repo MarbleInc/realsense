@@ -223,6 +223,7 @@ namespace realsense2_camera
         std::vector<std::shared_ptr<ddynamic_reconfigure::DDynamicReconfigure>> _ddynrec;
 
         std::string _json_file_path;
+        std::string _display_name;
         std::string _serial_no;
         float _depth_scale_meters;
         float _clipping_distance;
